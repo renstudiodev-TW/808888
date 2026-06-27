@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "data": "tsx scripts/build-data.ts daily539 lotto649 superLotto638"
   },
   "dependencies": {
     "next": "16.2.9",
