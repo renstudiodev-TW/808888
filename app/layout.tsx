@@ -44,7 +44,7 @@ function Header() {
             />
           </span>
           <span className="font-display text-xl font-bold tracking-wide text-gradient">808888</span>
-          <span className="hidden text-xs text-[var(--muted)] sm:inline">發發發發</span>
+          <span className="hidden text-xs text-[var(--muted)] sm:inline">幫您發發發發</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm sm:gap-4">
           <Link href="/games/daily539" className="px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)]">今彩539</Link>
