@@ -16,7 +16,8 @@ export function getLoginUrl(state: string, nonce: string): string {
     client_id: config.line.channelId,
     redirect_uri: config.line.callbackUrl,
     state,
-    scope: "profile openid email",
+    // email 需另外向 LINE 申請權限審核通過才可加回；先不要 email 避免未審而登入報錯。
+    scope: "profile openid",
     nonce,
   });
   return `https://access.line.me/oauth2/v2.1/authorize?${params}`;
