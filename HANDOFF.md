@@ -1,6 +1,22 @@
-# 牌靈 AI · 交班說明（2026-06-28 夜）
+# 17168（一起一路發）· 交班說明
 
-## 線上網址（已部署）
+## ⭐ 最新狀態（Phase B 完成）
+- **品牌定案：17168，網域 17168.ai**（一起一路發；已確認可註冊，待 RC 購買）。前台＋後台已全面改名。
+- **架構定案：一站式 Cloudflare**（單一 Worker：靜態前台＋Hono 後端＋D1＋Cron）。
+- **後端已改成可直接上 Cloudflare D1**：DB 層 async + AsyncLocalStorage 注入（本地 node:sqlite / 正式 D1 共用同一套碼）。`server/wrangler.toml`、`server/migrations/0001_init.sql`、`server/src/worker.ts` 都備好。本地實測全綠（後台、付費解鎖）。
+- **金流商更正：藍新 NewebPay**（非綠界），已移除 ecpay、改 `newebpay.ts` placeholder，Phase D 實作。
+- **卡點（需 RC）**：買網域、Cloudflare 帳號、LINE Login channel 憑證、藍新憑證。進度報告已寄 ren.studio.dev@gmail.com。
+
+### 部署到 Cloudflare 的步驟（RC 帳號就緒後一起做）
+1. `cd server && npm i`，`wrangler login`
+2. `wrangler d1 create lottery17168` → 把 database_id 填進 `wrangler.toml`
+3. `wrangler d1 migrations apply lottery17168 --remote`（建表）
+4. 專案根 `next build`（**不要**帶 NEXT_PUBLIC_BASE_PATH，產生根路徑 out/）
+5. `wrangler secret put ADMIN_PASSWORD / SESSION_SECRET / LINE_* / NEWEBPAY_*`
+6. `cd server && npm run deploy`
+7. Cloudflare 後台把 17168.ai 綁到此 Worker（custom domain）
+
+## 線上網址（前台臨時站）
 **https://renstudiodev-tw.github.io/lotterychang/**
 
 GitHub repo（public）：https://github.com/renstudiodev-TW/lotterychang
