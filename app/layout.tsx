@@ -22,10 +22,30 @@ const noto = Noto_Sans_TC({
 // next/image 不會自動為絕對路徑 src 補上 basePath，GitHub Pages 專案頁需手動帶入。
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
+const siteUrl = "https://808888.tw";
+const shareTitle = "808888.tw｜全亞洲最發發發的 AI 老師傅";
+const shareDesc =
+  "把玄學變成數據。冷熱號、遺漏值、尾數、拖牌版路…十多種台灣民間抓牌絕活，AI 一次算給你看，每天開獎前報你一手。僅供參考娛樂，無法保證中獎。";
+
 export const metadata: Metadata = {
-  title: "808888 · 發發發發｜樂透抓牌 AI 統計分析",
-  description:
-    "808888 用台灣民間抓牌技巧 + AI 統計，把冷熱號、遺漏值、尾數、拖牌版路自動算給你看。僅供參考娛樂，無法保證中獎。",
+  metadataBase: new URL(siteUrl),
+  title: shareTitle,
+  description: shareDesc,
+  openGraph: {
+    type: "website",
+    locale: "zh_TW",
+    url: siteUrl,
+    siteName: "808888.tw",
+    title: shareTitle,
+    description: shareDesc,
+    images: [{ url: "/caishen.png", width: 1024, height: 1024, alt: "808888 賽博財神爺" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: shareTitle,
+    description: shareDesc,
+    images: ["/caishen.png"],
+  },
 };
 
 function Header() {
