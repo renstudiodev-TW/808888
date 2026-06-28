@@ -3,7 +3,10 @@ import { Space_Grotesk, JetBrains_Mono, Noto_Sans_TC } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import { AuthNav } from "@/components/AuthNav";
+import { VisitCounter } from "@/components/VisitCounter";
 import "./globals.css";
+
+const LINE_ADD_URL = "https://line.me/R/ti/p/%40808888.tw";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -102,6 +105,9 @@ function Footer() {
           <div className="text-[var(--text)]">仁格數位科技工坊　統一編號 61138241</div>
           <div>高雄市前鎮區武德街153巷17號　聯絡電話 0976-858-794　Email ren.studio.dev@gmail.com</div>
         </div>
+        <div className="mb-3 text-[13px] text-[var(--muted)]">
+          <VisitCounter />
+        </div>
         <div className="flex flex-col items-start justify-between gap-2 sm:flex-row">
           <span>© {new Date().getFullYear()} 808888.tw · 由 仁格數位科技工坊（renstudio.tw）開發營運</span>
           <span className="text-[var(--muted)]">資料來源：台灣彩券公開開獎結果</span>
@@ -118,6 +124,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${spaceGrotesk.variable} ${jetbrains.variable} ${noto.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <a
+          href={LINE_ADD_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block bg-[#06C755] px-4 py-1.5 text-center text-[13px] font-bold text-white transition hover:brightness-110 sm:text-sm"
+        >
+          🟢 官方 LINE <span className="underline underline-offset-2">@808888.tw</span>　點我加好友，每日開獎前報你一手 →
+        </a>
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

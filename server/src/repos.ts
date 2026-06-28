@@ -229,3 +229,16 @@ export const ordersRepo = {
     );
   },
 };
+
+export const countersRepo = {
+  async get(key: string): Promise<number> {
+    return (await getDb().get<{ value: number }>("SELECT value FROM counters WHERE key = ?", [key]))?.value ?? 0;
+  },
+  async increment(key: string): Promise<number> {
+    await getDb().run(
+      "INSERT INTO counters (key, value) VALUES (?, 1) ON CONFLICT(key) DO UPDATE SET value = value + 1",
+      [key]
+    );
+    return countersRepo.get(key);
+  },
+};

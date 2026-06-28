@@ -1,7 +1,22 @@
-// 公開 API（免登入）：最新開獎號碼 + 樂透新聞。皆走 Cloudflare 邊緣快取，省外部請求。
+// 公開 API（免登入）：最新開獎號碼 + 樂透新聞 + 累積到訪。皆走 Cloudflare 邊緣快取，省外部請求。
 import { Hono } from "hono";
+import { getCookie, setCookie } from "hono/cookie";
+import { countersRepo } from "../repos.js";
 
 export const publicApi = new Hono();
+
+// 累積到訪人次（cookie 去重：每位訪客只 +1 一次，之後僅讀取）。
+publicApi.get("/api/visits", async (c) => {
+  const seen = getCookie(c, "v8");
+  let count: number;
+  if (seen) {
+    count = await countersRepo.get("visits");
+  } else {
+    count = await countersRepo.increment("visits");
+    setCookie(c, "v8", "1", { path: "/", maxAge: 180 * 86400, httpOnly: true, sameSite: "Lax" });
+  }
+  return c.json({ count });
+});
 
 // ── 最新開獎（台彩官方 API）──
 const TL_BASE = "https://api.taiwanlottery.com/TLCAPIWeB/Lottery";
