@@ -29,7 +29,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const siteUrl = "https://808888.tw";
 const shareTitle = "808888.tw｜全亞洲最發發發的 AI 老師傅";
 const shareDesc =
-  "把玄學變成數據。冷熱號、遺漏值、尾數、拖牌版路…十多種台灣民間抓牌絕活，AI 一次算給你看，每天開獎前報你一手。僅供參考娛樂，無法保證中獎。";
+  "把玄學變成數據。冷熱號、遺漏值、尾數、拖牌版路…十多種台灣民間抓牌絕活，AI 一次算給你看，每天開獎前自動更新。僅供參考娛樂，無法保證中獎。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -156,7 +156,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           rel="noopener noreferrer"
           className="block bg-[#06C755] px-3 py-1.5 text-center text-[12px] font-bold text-white transition hover:brightness-110 sm:text-sm"
         >
-          🟢 加官方 LINE <span className="underline underline-offset-2">@808888.tw</span> 好友<span className="hidden sm:inline">，每日開獎前報你一手</span> →
+          🟢 加官方 LINE <span className="underline underline-offset-2">@808888.tw</span> 好友<span className="hidden sm:inline">，每日精選不錯過</span> →
         </a>
         <Header />
         <main className="flex-1">{children}</main>

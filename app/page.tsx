@@ -54,7 +54,7 @@ export default async function Home() {
           </p>
           <p className="mx-auto mt-5 max-w-xl text-base text-[var(--muted)] sm:text-lg">
             老師傅的冷熱號、遺漏、尾數、拖牌版路…十多種民間抓牌絕活，AI 一次算給你看，
-            每天開獎前報你一手。
+            每天開獎前自動更新。
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link href="/games/daily539" className="btn-primary !px-8 !py-3.5 text-lg">看今彩539 分析</Link>
