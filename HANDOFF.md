@@ -19,9 +19,9 @@
 8. `cd server && npm run deploy`，Cloudflare 後台把 808888.tw 綁到此 Worker
 
 ## 線上網址（前台臨時站）
-**https://renstudiodev-tw.github.io/lotterychang/**
+**https://renstudiodev-tw.github.io/808888/**
 
-GitHub repo（public）：https://github.com/renstudiodev-TW/lotterychang
+GitHub repo（public）：https://github.com/renstudiodev-TW/808888
 
 > 這是**臨時**部署點（GitHub Pages）。正式版規劃搬到 Cloudflare Pages + 自有網域（要你登入授權時再做，純靜態搬家零成本）。
 

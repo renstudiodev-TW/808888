@@ -27,7 +27,7 @@ jobs:
       - name: Build (static export)
         run: npm run build
         env:
-          NEXT_PUBLIC_BASE_PATH: /lotterychang
+          NEXT_PUBLIC_BASE_PATH: /808888
       - name: Disable Jekyll
         run: touch out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
