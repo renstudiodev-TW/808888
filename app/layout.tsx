@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono, Noto_Sans_TC } from "next/font/google";
 import Link from "next/link";
+import Image from "next/image";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -29,6 +30,16 @@ function Header() {
     <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[rgba(8,11,16,0.8)] backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
         <Link href="/" className="flex items-center gap-2">
+          <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-[rgba(0,240,255,0.3)]">
+            <Image
+              src="/caishen.png"
+              alt="808888 財神爺"
+              width={64}
+              height={64}
+              className="absolute left-1/2 top-0 w-[185%] max-w-none -translate-x-1/2"
+              style={{ marginTop: "-4%" }}
+            />
+          </span>
           <span className="font-display text-xl font-bold tracking-wide text-gradient">808888</span>
           <span className="hidden text-xs text-[var(--muted)] sm:inline">發發發發</span>
         </Link>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { CodeRain } from "@/components/CodeRain";
 import { loadGame, loadIndex } from "@/lib/data";
 import { LockedPicks } from "@/components/LockedPicks";
@@ -23,6 +24,17 @@ export default async function Home() {
           <span className="tag mx-auto mb-5 inline-flex border-[rgba(0,240,255,0.35)] text-[var(--neon)]">
             ✦ AI 統計 × 台灣民間抓牌術
           </span>
+          <div className="mx-auto mb-6 w-fit">
+            <Image
+              src="/caishen.png"
+              alt="808888 賽博財神爺 · AI 老師傅"
+              width={360}
+              height={360}
+              priority
+              className="rounded-3xl border border-[rgba(0,240,255,0.3)] shadow-[0_0_70px_rgba(139,92,246,0.45)]"
+              style={{ width: "min(76vw, 360px)", height: "auto" }}
+            />
+          </div>
           <h1 className="font-display text-4xl leading-tight font-bold sm:text-6xl">
             <span className="text-[var(--text)]">科學的盡頭，</span>
             <span className="text-gradient">是玄學</span>
