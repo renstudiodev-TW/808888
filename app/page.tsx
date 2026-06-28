@@ -5,6 +5,9 @@ import { loadGame, loadIndex } from "@/lib/data";
 import { LockedPicks } from "@/components/LockedPicks";
 import { FreePicks } from "@/components/FreePicks";
 
+// next/image 不會自動為絕對路徑 src 補上 basePath，GitHub Pages 專案頁需手動帶入。
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const GAME_META: Record<string, { emoji: string; desc: string }> = {
   daily539: { emoji: "🎯", desc: "5/39 · 玩家最多、抓牌技巧最豐富" },
   lotto649: { emoji: "💎", desc: "6/49 + 特別號 · 頭獎累積上看數億" },
@@ -26,7 +29,7 @@ export default async function Home() {
           </span>
           <div className="mx-auto mb-6 w-fit">
             <Image
-              src="/caishen.png"
+              src={`${basePath}/caishen.png`}
               alt="808888 賽博財神爺 · AI 老師傅"
               width={360}
               height={360}

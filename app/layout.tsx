@@ -19,6 +19,9 @@ const noto = Noto_Sans_TC({
   weight: ["400", "500", "700"],
 });
 
+// next/image 不會自動為絕對路徑 src 補上 basePath，GitHub Pages 專案頁需手動帶入。
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const metadata: Metadata = {
   title: "808888 · 發發發發｜樂透抓牌 AI 統計分析",
   description:
@@ -32,7 +35,7 @@ function Header() {
         <Link href="/" className="flex items-center gap-2">
           <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-[rgba(0,240,255,0.3)]">
             <Image
-              src="/caishen.png"
+              src={`${basePath}/caishen.png`}
               alt="808888 財神爺"
               width={64}
               height={64}
