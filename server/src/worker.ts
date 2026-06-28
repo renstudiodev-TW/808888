@@ -4,6 +4,7 @@ import { dbAls } from "./db/index.js";
 import { D1Db, type D1Database } from "./db/d1.js";
 import { admin } from "./routes/admin.js";
 import { member } from "./routes/member.js";
+import { publicApi } from "./routes/public.js";
 import { readSession } from "./auth.js";
 import { runDailyReport } from "./reports.js";
 import { lineConfigured, lineMessagingConfigured, ecpayConfigured } from "./config.js";
@@ -45,6 +46,7 @@ app.get("/health", (c) => c.json({
 }));
 
 app.route("/admin", admin);
+app.route("/", publicApi); // /api/draws /api/news（公開）
 app.route("/", member); // /auth/* /api/*
 
 // 其餘交給靜態前台（Next.js 靜態輸出）

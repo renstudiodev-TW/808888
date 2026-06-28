@@ -4,6 +4,8 @@ import { CodeRain } from "@/components/CodeRain";
 import { loadGame, loadIndex } from "@/lib/data";
 import { LockedPicks } from "@/components/LockedPicks";
 import { FreePicks } from "@/components/FreePicks";
+import { LatestDraws } from "@/components/LatestDraws";
+import { LotteryNews } from "@/components/LotteryNews";
 
 // next/image 不會自動為絕對路徑 src 補上 basePath，GitHub Pages 專案頁需手動帶入。
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -63,6 +65,15 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* 最新開獎 */}
+      <section className="mb-16">
+        <div className="mb-4 flex items-end justify-between">
+          <h2 className="font-display text-2xl font-extrabold text-[var(--text)] sm:text-3xl">最新開獎號碼</h2>
+          <span className="text-xs text-[var(--muted)]">資料來源：台灣彩券</span>
+        </div>
+        <LatestDraws />
+      </section>
+
       {/* 今日報牌 (539) */}
       <section className="mb-16">
         <div className="mb-4 flex items-end justify-between">
@@ -99,6 +110,15 @@ export default async function Home() {
             );
           })}
         </div>
+      </section>
+
+      {/* 樂透新聞 */}
+      <section className="mb-16">
+        <div className="mb-4 flex items-end justify-between">
+          <h2 className="font-display text-2xl font-extrabold text-[var(--text)] sm:text-3xl">樂透新聞</h2>
+          <span className="text-xs text-[var(--muted)]">即時彙整</span>
+        </div>
+        <LotteryNews />
       </section>
 
       {/* 怎麼運作 */}
