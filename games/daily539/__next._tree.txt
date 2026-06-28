@@ -1,6 +1,6 @@
 :HL["/_next/static/chunks/3qb5v0lznl-st.css","style"]
 :HL["/_next/static/chunks/2v6-aceh9u19w.css","style"]
-:HL["/_next/static/chunks/2iqi8ano2ej01.css","style"]
+:HL["/_next/static/chunks/1d0_pngjcybkc.css","style"]
 :HL["/_next/static/media/051742360c26797e-s.p.1bkzbscqrt8rl.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/_next/static/media/0c89a48fa5027cee-s.p.2cyn07wtgehh0.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"games","param":null,"prefetchHints":0,"slots":{"children":{"name":"game","param":{"type":"d","key":"daily539","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"BPpt_DglcI3x4-nv2vSvM"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"games","param":null,"prefetchHints":0,"slots":{"children":{"name":"game","param":{"type":"d","key":"daily539","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"Wljm3Q3spzE93NQ89vdR2"}
