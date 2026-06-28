@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SubscribeButton } from "@/components/SubscribeButton";
+
+export const metadata: Metadata = {
+  title: "訂閱方案 · 進階 AI 報牌與拖牌版路｜808888.tw",
+  description:
+    "808888 訂閱方案：免費看完整冷熱、遺漏、尾數統計；進階解鎖 AI 高機率精選號、拖牌版路、每日 LINE 報牌推播。以藍新金流定期定額扣款，可隨時取消。",
+  alternates: { canonical: "/pricing/" },
+};
 
 interface Tier {
   id: string;
@@ -113,7 +121,16 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <SubscribeButton tier={t.id as "free" | "pro" | "max"} label={t.cta} highlight={t.highlight} />
+            {t.id === "free" ? (
+              <SubscribeButton tier="free" label={t.cta} highlight={t.highlight} />
+            ) : (
+              <>
+                <button className={`mt-6 ${t.highlight ? "btn-primary" : "btn-ghost"} opacity-60`} disabled>
+                  {t.cta}
+                </button>
+                <span className="mt-2 text-center text-[11px] text-[var(--muted)]">金流開通中，敬請期待</span>
+              </>
+            )}
           </div>
         ))}
       </div>

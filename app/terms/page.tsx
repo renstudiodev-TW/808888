@@ -4,6 +4,7 @@ import { LegalPage, Section, COMPANY } from "@/components/LegalPage";
 export const metadata: Metadata = {
   title: "服務條款｜808888.tw",
   description: "808888.tw 樂透統計分析服務條款。",
+  alternates: { canonical: "/terms/" },
 };
 
 export default function TermsPage() {

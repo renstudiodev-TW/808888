@@ -6,6 +6,7 @@ import { LockedPicks } from "@/components/LockedPicks";
 import { FreePicks } from "@/components/FreePicks";
 import { LatestDraws } from "@/components/LatestDraws";
 import { LotteryNews } from "@/components/LotteryNews";
+import { Faq } from "@/components/Faq";
 
 // next/image 不會自動為絕對路徑 src 補上 basePath，GitHub Pages 專案頁需手動帶入。
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -138,6 +139,9 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* 常見問題 (FAQ + JSON-LD) */}
+      <Faq />
     </div>
   );
 }

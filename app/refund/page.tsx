@@ -4,6 +4,7 @@ import { LegalPage, Section, COMPANY } from "@/components/LegalPage";
 export const metadata: Metadata = {
   title: "退費政策｜808888.tw",
   description: "808888.tw 訂閱方案的取消與退費說明。",
+  alternates: { canonical: "/refund/" },
 };
 
 export default function RefundPage() {

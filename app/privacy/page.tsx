@@ -4,6 +4,7 @@ import { LegalPage, Section, COMPANY } from "@/components/LegalPage";
 export const metadata: Metadata = {
   title: "隱私權政策｜808888.tw",
   description: "808888.tw 如何蒐集、利用與保護您的個人資料。",
+  alternates: { canonical: "/privacy/" },
 };
 
 export default function PrivacyPage() {
