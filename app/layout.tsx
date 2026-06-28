@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     siteName: "808888.tw",
     title: shareTitle,
     description: shareDesc,
-    images: [{ url: "/caishen.png", width: 1024, height: 1024, alt: "808888 賽博財神爺" }],
+    images: [{ url: "/caishen.png", width: 640, height: 640, alt: "808888 賽博財神爺" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -63,10 +63,10 @@ function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[rgba(8,11,16,0.8)] backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex min-w-0 shrink items-center gap-2">
           <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-[rgba(0,240,255,0.3)]">
             <Image
-              src={`${basePath}/caishen.png`}
+              src={`${basePath}/caishen.webp`}
               alt="808888 財神爺"
               width={64}
               height={64}
@@ -74,16 +74,16 @@ function Header() {
               style={{ marginTop: "-4%" }}
             />
           </span>
-          <span className="font-display text-2xl font-extrabold tracking-wide text-gradient">808888.tw</span>
-          <span className="ml-1 hidden rounded-full border border-[rgba(255,42,95,0.5)] bg-[rgba(255,42,95,0.12)] px-3 py-1 text-base font-extrabold text-[var(--hot)] shadow-[0_0_16px_rgba(255,42,95,0.35)] sm:inline">
+          <span className="whitespace-nowrap font-display text-lg font-extrabold tracking-wide text-gradient sm:text-2xl">808888.tw</span>
+          <span className="ml-1 hidden rounded-full border border-[rgba(255,42,95,0.5)] bg-[rgba(255,42,95,0.12)] px-3 py-1 text-base font-extrabold text-[var(--hot)] shadow-[0_0_16px_rgba(255,42,95,0.35)] lg:inline">
             幫您發發發發
           </span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm sm:gap-4">
-          <Link href="/games/daily539" className="px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)]">今彩539</Link>
+        <nav className="flex shrink-0 items-center gap-2 text-sm sm:gap-4">
+          <Link href="/games/daily539" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">今彩539</Link>
           <Link href="/games/lotto649" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">大樂透</Link>
           <Link href="/games/superLotto638" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">威力彩</Link>
-          <Link href="/pricing" className="btn-primary !px-4 !py-1.5 text-sm">訂閱方案</Link>
+          <Link href="/pricing" className="btn-primary shrink-0 whitespace-nowrap !px-3 !py-1.5 text-sm sm:!px-4">訂閱方案</Link>
           <AuthNav />
         </nav>
       </div>
@@ -154,9 +154,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           href={LINE_ADD_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="block bg-[#06C755] px-4 py-1.5 text-center text-[13px] font-bold text-white transition hover:brightness-110 sm:text-sm"
+          className="block bg-[#06C755] px-3 py-1.5 text-center text-[12px] font-bold text-white transition hover:brightness-110 sm:text-sm"
         >
-          🟢 官方 LINE <span className="underline underline-offset-2">@808888.tw</span>　點我加好友，每日開獎前報你一手 →
+          🟢 加官方 LINE <span className="underline underline-offset-2">@808888.tw</span> 好友<span className="hidden sm:inline">，每日開獎前報你一手</span> →
         </a>
         <Header />
         <main className="flex-1">{children}</main>

@@ -36,7 +36,7 @@ export default async function Home() {
           </span>
           <div className="mx-auto mb-6 w-fit">
             <Image
-              src={`${basePath}/caishen.png`}
+              src={`${basePath}/caishen.webp`}
               alt="808888 賽博財神爺 · AI 老師傅"
               width={360}
               height={360}

@@ -29,7 +29,7 @@ export function AuthNav() {
     return (
       <a
         href="/auth/line/login"
-        className="inline-flex items-center gap-1.5 rounded-full bg-[#06C755] px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110"
+        className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#06C755] px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110 sm:px-4"
       >
         <span className="font-black">LINE</span> 登入
       </a>
@@ -37,7 +37,7 @@ export function AuthNav() {
   }
 
   return (
-    <a href="/member/" className="flex items-center gap-2" title="會員專區">
+    <a href="/member/" className="flex shrink-0 items-center gap-2" title="會員專區">
       {me.picture ? (
         <img
           src={me.picture}
