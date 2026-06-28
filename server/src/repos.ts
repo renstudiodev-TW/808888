@@ -186,4 +186,7 @@ export const pushRepo = {
       "SELECT user_id, line_user_id FROM push_targets WHERE enabled = 1"
     );
   },
+  async forUser(userId: string): Promise<{ enabled: number } | undefined> {
+    return getDb().get<{ enabled: number }>("SELECT enabled FROM push_targets WHERE user_id = ?", [userId]);
+  },
 };

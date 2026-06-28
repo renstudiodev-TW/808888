@@ -40,7 +40,7 @@ member.get("/auth/line/callback", async (c) => {
     await usersRepo.touchLogin(user.id);
     await pushRepo.upsert(user.id, prof.lineUserId, true);
     await issueSession(c, { sub: user.id, role: "member", name: user.display_name });
-    return c.redirect("/");
+    return c.redirect("/member/");
   } catch (e) {
     return c.text(`LINE 登入失敗：${(e as Error).message}`, 500);
   }
@@ -71,6 +71,7 @@ member.get("/api/me", requireMember, async (c) => {
   const user = await usersRepo.byId(s.sub);
   if (!user) return c.json({ error: "not found" }, 404);
   const sub = await subsRepo.ensure(user.id);
+  const push = await pushRepo.forUser(user.id);
   return c.json({
     id: user.id,
     name: user.display_name,
@@ -78,6 +79,8 @@ member.get("/api/me", requireMember, async (c) => {
     tier: sub.tier,
     subStatus: sub.status,
     periodEnd: sub.current_period_end,
+    hasLine: Boolean(user.line_user_id),
+    pushEnabled: push ? Boolean(push.enabled) : false,
   });
 });
 

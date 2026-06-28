@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono, Noto_Sans_TC } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
+import { AuthNav } from "@/components/AuthNav";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -73,6 +74,7 @@ function Header() {
           <Link href="/games/lotto649" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">大樂透</Link>
           <Link href="/games/superLotto638" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">威力彩</Link>
           <Link href="/pricing" className="btn-primary !px-4 !py-1.5 text-sm">訂閱方案</Link>
+          <AuthNav />
         </nav>
       </div>
     </header>
