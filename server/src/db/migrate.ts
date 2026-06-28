@@ -1,14 +1,12 @@
-// 建表 + 種子方案資料。可重複執行 (IF NOT EXISTS)。
-import { getDb, schemaSql } from "./index.js";
+// 建表 + 種子方案。async（D1 相容）。可重複執行（IF NOT EXISTS / upsert）。
+import { getDb, SCHEMA_SQL } from "./index.js";
 import { PLAN_SEED } from "../plans.js";
 
-export function migrate() {
+export async function migrate() {
   const db = getDb();
-  db.exec(schemaSql());
-
-  // 種子訂閱方案 (upsert)
+  await db.exec(SCHEMA_SQL);
   for (const p of PLAN_SEED) {
-    db.run(
+    await db.run(
       `INSERT INTO plans (tier, name, price_twd, features, sort_order, active)
        VALUES (?, ?, ?, ?, ?, 1)
        ON CONFLICT(tier) DO UPDATE SET name=excluded.name, price_twd=excluded.price_twd,
@@ -16,10 +14,4 @@ export function migrate() {
       [p.tier, p.name, p.priceTwd, JSON.stringify(p.features), p.sortOrder]
     );
   }
-  console.log("migrate: schema 建立完成，方案已種子化");
-}
-
-// 直接執行
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("migrate.ts")) {
-  migrate();
 }

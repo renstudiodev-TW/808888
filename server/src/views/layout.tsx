@@ -58,13 +58,13 @@ export const Layout: FC<PropsWithChildren<{ title: string; session?: { name: str
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex" />
-        <title>{props.title} · 牌靈 AI 後台</title>
+        <title>{props.title} · 17168 後台</title>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
       </head>
       <body>
         {props.session && (
           <header class="top">
-            <span class="brand">🔮 牌靈 AI 後台</span>
+            <span class="brand">🔮 17168 後台</span>
             <nav>
               <a href="/admin">儀表板</a>
               <a href="/admin/members">會員</a>

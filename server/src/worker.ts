@@ -1,67 +1,71 @@
-// Cloudflare Workers 入口骨架 (正式環境)。
-//
-// ⚠️ 尚未完整接線：目前 repos 透過模組級 getDb() (node:sqlite) 取得 DB，
-//    在 Workers 上要改成「每個 request 從 env.DB (D1 binding) 注入」。
-//    遷移時的步驟：
-//    1. 把 repos 改成接收 Db 參數 (或用 AsyncLocalStorage 注入 per-request)。
-//    2. 下方 D1Db 實作 Db 介面 (D1 的 API 是 async，repos 需配合改 async)。
-//    3. wrangler.toml 綁定 D1、設定 Cron Trigger 呼叫 runDailyReport。
-//
-// 本檔先放可編譯的 D1 adapter 範例與 fetch/scheduled 入口，待遷移時啟用。
+// Cloudflare Workers 入口（一站式：靜態前台 + Hono 後端 API/後台 + D1 + Cron）。
+import { Hono } from "hono";
+import { dbAls } from "./db/index.js";
+import { D1Db, type D1Database } from "./db/d1.js";
+import { admin } from "./routes/admin.js";
+import { member } from "./routes/member.js";
+import { readSession } from "./auth.js";
+import { runDailyReport } from "./reports.js";
+import { lineConfigured, lineMessagingConfigured, ecpayConfigured } from "./config.js";
 
-import type { Db } from "./db/index.js";
-
-interface D1Result<T> { results: T[] }
-interface D1PreparedStatement {
-  bind(...vals: unknown[]): D1PreparedStatement;
-  all<T>(): Promise<D1Result<T>>;
-  first<T>(): Promise<T | null>;
-  run(): Promise<unknown>;
-}
-interface D1Database {
-  prepare(sql: string): D1PreparedStatement;
-  exec(sql: string): Promise<unknown>;
-}
 export interface Env {
   DB: D1Database;
-  ADMIN_USER: string;
-  ADMIN_PASSWORD: string;
-  SESSION_SECRET: string;
+  ASSETS: { fetch(req: Request): Promise<Response> };
+  ADMIN_USER?: string;
+  ADMIN_PASSWORD?: string;
+  SESSION_SECRET?: string;
+  BASE_URL?: string;
   LINE_CHANNEL_ID?: string;
   LINE_CHANNEL_SECRET?: string;
+  LINE_CALLBACK_URL?: string;
   LINE_MESSAGING_TOKEN?: string;
-  ECPAY_MERCHANT_ID?: string;
-  ECPAY_HASH_KEY?: string;
-  ECPAY_HASH_IV?: string;
+  NEWEBPAY_MERCHANT_ID?: string;
+  NEWEBPAY_HASH_KEY?: string;
+  NEWEBPAY_HASH_IV?: string;
 }
 
-/** D1 版 Db adapter (async 版本，遷移 repos 為 async 後即可使用) */
-export class D1Db {
-  constructor(private d1: D1Database) {}
-  async all<T>(sql: string, params: unknown[] = []): Promise<T[]> {
-    return (await this.d1.prepare(sql).bind(...params).all<T>()).results;
-  }
-  async get<T>(sql: string, params: unknown[] = []): Promise<T | undefined> {
-    return (await this.d1.prepare(sql).bind(...params).first<T>()) ?? undefined;
-  }
-  async run(sql: string, params: unknown[] = []): Promise<void> {
-    await this.d1.prepare(sql).bind(...params).run();
-  }
-  async exec(sql: string): Promise<void> {
-    await this.d1.exec(sql);
+// 把 Worker 的 env 字串變數併入 process.env，讓 config 的 getter 讀得到。
+function applyEnv(env: Env) {
+  for (const [k, v] of Object.entries(env)) {
+    if (typeof v === "string") process.env[k] = v;
   }
 }
+
+const app = new Hono<{ Bindings: Env }>();
+
+// 每個 request：注入 D1 context + 環境變數
+app.use("*", async (c, next) => {
+  applyEnv(c.env);
+  return dbAls.run(new D1Db(c.env.DB), next);
+});
+
+app.get("/health", (c) => c.json({
+  ok: true,
+  integrations: { lineLogin: lineConfigured(), linePush: lineMessagingConfigured(), payment: ecpayConfigured() },
+}));
+
+app.route("/admin", admin);
+app.route("/", member); // /auth/* /api/*
+
+// 其餘交給靜態前台（Next.js 靜態輸出）
+app.all("*", async (c) => {
+  // 已登入 admin 打根目錄 → 進後台
+  if (c.req.path === "/") {
+    const s = await readSession(c);
+    if (s?.role === "admin") return c.redirect("/admin");
+  }
+  return c.env.ASSETS.fetch(c.req.raw);
+});
 
 export default {
-  async fetch(_req: Request, _env: Env): Promise<Response> {
-    return new Response("牌靈 AI worker — 待遷移 (見檔頭註解)。本地請用 npm run dev。", {
-      status: 501,
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
-  },
-  // Cloudflare Cron Trigger → 每日報牌
-  async scheduled(_event: unknown, _env: Env): Promise<void> {
-    // 遷移後：const db = new D1Db(env.DB); await runDailyReport(db, "daily539");
-    void (null as unknown as Db);
+  fetch: app.fetch,
+  // Cloudflare Cron Trigger → 每日報牌（資料來源 Phase C 接 KV/R2；目前 loadFull 在 Workers 回 null 即 no-op）
+  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    applyEnv(env);
+    ctx.waitUntil(dbAls.run(new D1Db(env.DB), () => runDailyReport("daily539").then(() => undefined)));
   },
 };
+
+// Workers 型別（避免額外依賴 @cloudflare/workers-types）
+interface ScheduledEvent { readonly scheduledTime: number; readonly cron: string; }
+interface ExecutionContext { waitUntil(p: Promise<unknown>): void; passThroughOnException(): void; }

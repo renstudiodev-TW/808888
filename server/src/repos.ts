@@ -1,4 +1,4 @@
-// 資料存取層 (repositories)。SQL 為 SQLite 方言，node:sqlite 與 D1 通用。
+// 資料存取層（repositories），全部 async（node:sqlite 與 D1 共用）。
 import { getDb } from "./db/index.js";
 import { uuid, nowIso } from "./util.js";
 import type { Tier } from "./plans.js";
@@ -36,19 +36,18 @@ export interface MemberRow extends User {
   current_period_end: string | null;
 }
 
-// ---- Users ----
 export const usersRepo = {
-  byId(id: string): User | undefined {
+  async byId(id: string): Promise<User | undefined> {
     return getDb().get<User>("SELECT * FROM users WHERE id = ?", [id]);
   },
-  byLineId(lineUserId: string): User | undefined {
+  async byLineId(lineUserId: string): Promise<User | undefined> {
     return getDb().get<User>("SELECT * FROM users WHERE line_user_id = ?", [lineUserId]);
   },
-  create(input: Partial<User> & { display_name: string }): User {
+  async create(input: Partial<User> & { display_name: string }): Promise<User> {
     const db = getDb();
     const id = input.id ?? uuid();
     const now = nowIso();
-    db.run(
+    await db.run(
       `INSERT INTO users (id, line_user_id, display_name, picture_url, email, role, status, created_at, last_login_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -56,32 +55,31 @@ export const usersRepo = {
         input.email ?? null, input.role ?? "member", input.status ?? "active", now, now,
       ]
     );
-    return usersRepo.byId(id)!;
+    return (await usersRepo.byId(id))!;
   },
-  touchLogin(id: string): void {
-    getDb().run("UPDATE users SET last_login_at = ? WHERE id = ?", [nowIso(), id]);
+  async touchLogin(id: string): Promise<void> {
+    await getDb().run("UPDATE users SET last_login_at = ? WHERE id = ?", [nowIso(), id]);
   },
-  setStatus(id: string, status: "active" | "suspended"): void {
-    getDb().run("UPDATE users SET status = ? WHERE id = ?", [status, id]);
+  async setStatus(id: string, status: "active" | "suspended"): Promise<void> {
+    await getDb().run("UPDATE users SET status = ? WHERE id = ?", [status, id]);
   },
-  count(): number {
-    return getDb().get<{ c: number }>("SELECT COUNT(*) c FROM users")?.c ?? 0;
+  async count(): Promise<number> {
+    return (await getDb().get<{ c: number }>("SELECT COUNT(*) c FROM users"))?.c ?? 0;
   },
 };
 
-// ---- Subscriptions ----
 export const subsRepo = {
-  forUser(userId: string): Subscription | undefined {
+  async forUser(userId: string): Promise<Subscription | undefined> {
     return getDb().get<Subscription>(
       "SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
       [userId]
     );
   },
-  create(userId: string, tier: Tier, opts: Partial<Subscription> = {}): Subscription {
+  async create(userId: string, tier: Tier, opts: Partial<Subscription> = {}): Promise<Subscription> {
     const db = getDb();
     const id = uuid();
     const now = nowIso();
-    db.run(
+    await db.run(
       `INSERT INTO subscriptions (id, user_id, tier, status, source, started_at, current_period_end,
         ecpay_merchant_member_id, ecpay_gwsr, note, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -91,9 +89,9 @@ export const subsRepo = {
         opts.ecpay_gwsr ?? null, opts.note ?? null, now, now,
       ]
     );
-    return getDb().get<Subscription>("SELECT * FROM subscriptions WHERE id = ?", [id])!;
+    return (await db.get<Subscription>("SELECT * FROM subscriptions WHERE id = ?", [id]))!;
   },
-  update(id: string, fields: Partial<Pick<Subscription, "tier" | "status" | "current_period_end" | "note" | "source">>): void {
+  async update(id: string, fields: Partial<Pick<Subscription, "tier" | "status" | "current_period_end" | "note" | "source">>): Promise<void> {
     const sets: string[] = [];
     const params: unknown[] = [];
     for (const [k, v] of Object.entries(fields)) {
@@ -104,23 +102,21 @@ export const subsRepo = {
     sets.push("updated_at = ?");
     params.push(nowIso());
     params.push(id);
-    getDb().run(`UPDATE subscriptions SET ${sets.join(", ")} WHERE id = ?`, params);
+    await getDb().run(`UPDATE subscriptions SET ${sets.join(", ")} WHERE id = ?`, params);
   },
-  /** 確保有一筆訂閱，沒有就建免費 */
-  ensure(userId: string): Subscription {
-    return subsRepo.forUser(userId) ?? subsRepo.create(userId, "free");
+  async ensure(userId: string): Promise<Subscription> {
+    return (await subsRepo.forUser(userId)) ?? (await subsRepo.create(userId, "free"));
   },
-  countByTier(): Record<string, number> {
-    const rows = getDb().all<{ tier: string; c: number }>(
+  async countByTier(): Promise<Record<string, number>> {
+    const rows = await getDb().all<{ tier: string; c: number }>(
       "SELECT tier, COUNT(*) c FROM subscriptions GROUP BY tier"
     );
     return Object.fromEntries(rows.map((r) => [r.tier, r.c]));
   },
 };
 
-// ---- 會員列表 (join 最新訂閱) ----
 export const membersRepo = {
-  list(opts: { q?: string; tier?: string; limit?: number; offset?: number } = {}): MemberRow[] {
+  async list(opts: { q?: string; tier?: string; limit?: number; offset?: number } = {}): Promise<MemberRow[]> {
     const where: string[] = [];
     const params: unknown[] = [];
     if (opts.q) {
@@ -149,28 +145,26 @@ export const membersRepo = {
   },
 };
 
-// ---- 稽核日誌 ----
 export const auditRepo = {
-  log(actor: string, action: string, targetUser?: string, detail?: string): void {
-    getDb().run(
+  async log(actor: string, action: string, targetUser?: string, detail?: string): Promise<void> {
+    await getDb().run(
       "INSERT INTO admin_audit (id, actor, action, target_user, detail, created_at) VALUES (?, ?, ?, ?, ?, ?)",
       [uuid(), actor, action, targetUser ?? null, detail ?? null, nowIso()]
     );
   },
-  recent(limit = 50): Array<{ id: string; actor: string; action: string; target_user: string | null; detail: string | null; created_at: string }> {
+  async recent(limit = 50): Promise<Array<{ id: string; actor: string; action: string; target_user: string | null; detail: string | null; created_at: string }>> {
     return getDb().all("SELECT * FROM admin_audit ORDER BY created_at DESC LIMIT ?", [limit]);
   },
 };
 
-// ---- 報牌寄送 ----
 export const deliveriesRepo = {
-  log(userId: string, game: string, channel: string, status: string, opts: { drawPeriod?: string; detail?: string } = {}): void {
-    getDb().run(
+  async log(userId: string, game: string, channel: string, status: string, opts: { drawPeriod?: string; detail?: string } = {}): Promise<void> {
+    await getDb().run(
       "INSERT INTO pick_deliveries (id, user_id, game, draw_period, channel, status, detail, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       [uuid(), userId, game, opts.drawPeriod ?? null, channel, status, opts.detail ?? null, nowIso()]
     );
   },
-  recent(limit = 50) {
+  async recent(limit = 50): Promise<Array<{ user_id: string; display_name: string; game: string; channel: string; status: string; created_at: string }>> {
     return getDb().all(
       `SELECT d.*, u.display_name FROM pick_deliveries d JOIN users u ON u.id = d.user_id
        ORDER BY d.created_at DESC LIMIT ?`,
@@ -179,16 +173,15 @@ export const deliveriesRepo = {
   },
 };
 
-// ---- 推播對象 ----
 export const pushRepo = {
-  upsert(userId: string, lineUserId: string, enabled = true): void {
-    getDb().run(
+  async upsert(userId: string, lineUserId: string, enabled = true): Promise<void> {
+    await getDb().run(
       `INSERT INTO push_targets (user_id, line_user_id, enabled, created_at) VALUES (?, ?, ?, ?)
        ON CONFLICT(user_id) DO UPDATE SET line_user_id=excluded.line_user_id, enabled=excluded.enabled`,
       [userId, lineUserId, enabled ? 1 : 0, nowIso()]
     );
   },
-  enabledTargets() {
+  async enabledTargets(): Promise<Array<{ user_id: string; line_user_id: string }>> {
     return getDb().all<{ user_id: string; line_user_id: string }>(
       "SELECT user_id, line_user_id FROM push_targets WHERE enabled = 1"
     );

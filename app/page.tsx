@@ -21,7 +21,8 @@ export default async function Home() {
             ✦ AI 統計 × 台灣民間抓牌術
           </span>
           <h1 className="font-display text-4xl leading-tight font-bold sm:text-6xl">
-            <span className="text-gradient">牌靈 AI</span>
+            <span className="text-gradient">17168</span>
+            <span className="ml-3 align-middle text-xl text-[var(--muted)] sm:text-2xl">一起一路發</span>
             <br />
             <span className="text-[var(--text)]">幫你把抓牌手算，全部自動化</span>
           </h1>

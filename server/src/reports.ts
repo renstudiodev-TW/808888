@@ -18,9 +18,14 @@ interface FullBundle {
 }
 
 export function loadFull(game: string): FullBundle | null {
-  const f = path.join(FULL_DIR, `${game}.json`);
-  if (!existsSync(f)) return null;
-  return JSON.parse(readFileSync(f, "utf8")) as FullBundle;
+  // 本地由檔案系統讀；Workers 無 fs（Phase C 改由 KV/R2 提供）→ 優雅回 null。
+  try {
+    const f = path.join(FULL_DIR, `${game}.json`);
+    if (!existsSync(f)) return null;
+    return JSON.parse(readFileSync(f, "utf8")) as FullBundle;
+  } catch {
+    return null;
+  }
 }
 
 /** 產生某彩種的報牌文字 (含高機率精選號，僅付費會員可收) */
@@ -29,7 +34,7 @@ export function buildReportText(game: string): string | null {
   if (!b || !b.latest) return null;
   const top = b.score.slice(0, b.pick).map((s) => String(s.n).padStart(2, "0"));
   return [
-    `🔮 牌靈 AI ${b.name} 每日報牌`,
+    `🔮 17168 ${b.name} 每日報牌`,
     `期別參考：${b.latest.period}（${b.latest.date}）`,
     ``,
     `AI 高機率精選 ${b.pick} 碼：`,
@@ -47,7 +52,7 @@ export async function runDailyReport(game = "daily539"): Promise<{ total: number
   const text = buildReportText(game);
   if (!text) return { total: 0, sent: 0, skipped: 0, stub: false };
 
-  const targets = pushRepo.enabledTargets();
+  const targets = await pushRepo.enabledTargets();
   let sent = 0;
   let skipped = 0;
   let stub = false;
@@ -55,18 +60,18 @@ export async function runDailyReport(game = "daily539"): Promise<{ total: number
   const period = b?.latest?.period;
 
   for (const t of targets) {
-    const user = usersRepo.byId(t.user_id);
-    const sub = subsRepo.forUser(t.user_id);
+    const user = await usersRepo.byId(t.user_id);
+    const sub = await subsRepo.forUser(t.user_id);
     const eligible = user?.status === "active" && sub && tierMeets(sub.tier, "pro") &&
       (sub.status === "active" || sub.status === "trial");
     if (!eligible) {
-      deliveriesRepo.log(t.user_id, game, "line", "skipped", { drawPeriod: period, detail: "未達付費資格" });
+      await deliveriesRepo.log(t.user_id, game, "line", "skipped", { drawPeriod: period, detail: "未達付費資格" });
       skipped++;
       continue;
     }
     const res = await pushMessage(t.line_user_id, [{ type: "text", text }]);
     if (res.stub) stub = true;
-    deliveriesRepo.log(t.user_id, game, "line", res.ok ? "sent" : "failed", {
+    await deliveriesRepo.log(t.user_id, game, "line", res.ok ? "sent" : "failed", {
       drawPeriod: period,
       detail: res.stub ? "LINE stub (未設定 token)" : `status ${res.status ?? ""}`,
     });
