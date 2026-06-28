@@ -21,15 +21,19 @@ export default async function Home() {
             ✦ AI 統計 × 台灣民間抓牌術
           </span>
           <h1 className="font-display text-4xl leading-tight font-bold sm:text-6xl">
-            <span className="text-gradient">808888</span>
-            <span className="ml-3 align-middle text-xl text-[var(--muted)] sm:text-2xl">發發發發</span>
-            <br />
-            <span className="text-[var(--text)]">幫你把抓牌手算，全部自動化</span>
+            <span className="text-[var(--text)]">科學的盡頭，</span>
+            <span className="text-gradient">是玄學</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-[var(--muted)]">
-            冷熱號、遺漏值、尾數、拖牌版路、生肖球…你本來在紙上算的，AI 一秒算完並算出綜合機率。
-            每日自動報牌，高機率精選一鍵解鎖。
+          <p className="mt-4 font-display text-lg font-semibold text-[var(--neon)] sm:text-xl">
+            808888 ｜ 把玄學，變成數據
           </p>
+          <p className="mx-auto mt-5 max-w-xl text-[var(--muted)]">
+            老師傅的冷熱號、遺漏、尾數、拖牌版路…十多種民間抓牌絕活，AI 一次算給你看，
+            每天開獎前報你一手。
+          </p>
+          <span className="mt-5 inline-flex items-center gap-1 rounded-full border border-[rgba(255,42,95,0.4)] bg-[rgba(255,42,95,0.06)] px-3 py-1 text-[12px] text-[var(--hot)]">
+            🔥 全亞洲最敢算發發發的 AI
+          </span>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/games/daily539" className="btn-primary">看今彩539 分析</Link>
             <Link href="/pricing" className="btn-ghost">訂閱方案</Link>
