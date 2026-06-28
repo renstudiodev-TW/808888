@@ -46,7 +46,7 @@ export function LockedPicks({ picks, gameName }: { picks: LockedTeaser[]; gameNa
         <Link href="/pricing" className="btn-primary w-full sm:w-auto">
           🔓 解鎖完整號碼
         </Link>
-        <span className="text-[11px] text-[var(--muted)]">解鎖後可看號碼、評分組成、拖牌版路與每日 LINE 報牌</span>
+        <span className="text-[11px] text-[var(--muted)]">解鎖後可看號碼、評分組成、拖牌版路與每日 LINE 精選</span>
       </div>
     </div>
   );

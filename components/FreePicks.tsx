@@ -1,6 +1,6 @@
 import { NumberBall } from "./NumberBall";
 
-/** 每日免費報牌：中評分參考號 (號碼露出) */
+/** 每日免費精選：中評分參考號 (號碼露出) */
 export function FreePicks({
   picks,
   gameName,
@@ -12,7 +12,7 @@ export function FreePicks({
     <div className="glass p-5 sm:p-6">
       <div className="mb-1 flex items-center gap-2">
         <span className="tag border-[rgba(0,255,135,0.35)] text-[var(--cold)]">免費</span>
-        <span className="tag">每日參考報牌</span>
+        <span className="tag">每日參考精選</span>
       </div>
       <h3 className="font-display text-lg font-bold text-[var(--text)]">本期 {gameName} 參考號</h3>
       <p className="mt-1 mb-5 text-sm text-[var(--muted)]">

@@ -29,7 +29,7 @@ export interface PublicBundle {
   zodiac: AnalysisBundle["zodiac"];
   patterns: AnalysisBundle["patterns"];
   patternSummary: AnalysisBundle["patternSummary"];
-  // 每日報牌 (免費)：中評分參考號 (排名 pick..pick*2)，號碼露出
+  // 每日精選 (免費)：中評分參考號 (排名 pick..pick*2)，號碼露出
   freePicks: { n: number; score: number }[];
   // 高評分 AI 牌 (付費)：只露分數，號碼遮罩
   lockedPicks: LockedTeaser[];
@@ -43,7 +43,7 @@ export function publicize(full: AnalysisBundle): PublicBundle {
   const pick = full.pick;
   // score 已由高到低排序
   const top = full.score.slice(0, pick); // 高評分 → 鎖
-  const mid = full.score.slice(pick, pick * 2); // 中評分 → 免費報牌
+  const mid = full.score.slice(pick, pick * 2); // 中評分 → 免費精選
 
   const lockedPicks: LockedTeaser[] = top.map((s, i) => ({
     rank: i + 1,

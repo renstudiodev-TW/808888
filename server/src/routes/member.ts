@@ -117,7 +117,7 @@ member.post("/api/me/push/test", requireMember, async (c) => {
   const res = await pushMessage(user.line_user_id, [
     {
       type: "text",
-      text: "🔮 808888 測試推播\n你已成功開通 LINE 報牌推播！開獎前老師傅會把當日精選號送到這裡。\n\n⚠️ 樂透為獨立隨機事件，僅供參考娛樂，不保證中獎。",
+      text: "🔮 808888 測試推播\n你已成功開通 LINE 精選推播！開獎前老師傅會把當日精選號送到這裡。\n\n⚠️ 樂透為獨立隨機事件，僅供參考娛樂，不保證中獎。",
     },
   ]);
   if (res.stub) return c.json({ ok: false, error: "推播未設定（缺 access token）" }, 503);

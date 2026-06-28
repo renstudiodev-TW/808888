@@ -61,7 +61,7 @@ app.all("*", async (c) => {
 
 export default {
   fetch: app.fetch,
-  // Cloudflare Cron Trigger → 每日報牌（資料來源 Phase C 接 KV/R2；目前 loadFull 在 Workers 回 null 即 no-op）
+  // Cloudflare Cron Trigger → 每日精選（資料來源 Phase C 接 KV/R2；目前 loadFull 在 Workers 回 null 即 no-op）
   async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     applyEnv(env);
     ctx.waitUntil(dbAls.run(new D1Db(env.DB), () => runDailyReport("daily539").then(() => undefined)));

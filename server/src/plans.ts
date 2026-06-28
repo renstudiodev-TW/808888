@@ -16,14 +16,14 @@ export const PLAN_SEED: PlanSeed[] = [
     name: "免費會員",
     priceTwd: 0,
     sortOrder: 0,
-    features: ["冷熱/遺漏/尾數/區間/生肖/型態統計", "每日中評分參考報牌", "AI 高評分精選只看分數"],
+    features: ["冷熱/遺漏/尾數/區間/生肖/型態統計", "每日中評分參考精選", "AI 高評分精選只看分數"],
   },
   {
     tier: "pro",
     name: "進階會員",
     priceTwd: 199,
     sortOrder: 1,
-    features: ["完整 AI 高評分精選號碼", "拖牌/版路分析", "評分組成明細", "每日 LINE 報牌推播", "全彩種"],
+    features: ["完整 AI 高評分精選號碼", "拖牌/版路分析", "評分組成明細", "每日 LINE 精選推播", "全彩種"],
   },
   {
     tier: "max",

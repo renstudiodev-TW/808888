@@ -51,7 +51,7 @@ export async function exchangeCode(code: string): Promise<LineProfile> {
   return { lineUserId: prof.userId, displayName: prof.displayName, pictureUrl: prof.pictureUrl };
 }
 
-/** 推播訊息給單一使用者 (報牌用)。未設定 token 時 stub。 */
+/** 推播訊息給單一使用者 (精選用)。未設定 token 時 stub。 */
 export async function pushMessage(
   toLineUserId: string,
   messages: Array<{ type: "text"; text: string }>

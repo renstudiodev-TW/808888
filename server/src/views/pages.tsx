@@ -182,7 +182,7 @@ export const MemberDetail: FC<{
     </div>
 
     <div class="card">
-      <h2>報牌寄送紀錄</h2>
+      <h2>精選寄送紀錄</h2>
       <table>
         <thead><tr><th>彩種</th><th>管道</th><th>狀態</th><th>時間</th></tr></thead>
         <tbody>
@@ -219,10 +219,10 @@ export const AuditPage: FC<{ session: { name: string }; rows: Array<{ actor: str
 );
 
 export const DeliveriesPage: FC<{ session: { name: string }; rows: Array<{ display_name: string; game: string; channel: string; status: string; created_at: string }>; configWarn: string[] }> = ({ session, rows, configWarn }) => (
-  <Layout title="報牌紀錄" session={session} configWarn={configWarn}>
+  <Layout title="精選紀錄" session={session} configWarn={configWarn}>
     <div class="row" style="justify-content:space-between">
-      <h1>報牌寄送紀錄</h1>
-      <form method="post" action="/admin/deliveries/run"><button class="btn ghost" type="submit">▶ 手動觸發今日報牌 (測試)</button></form>
+      <h1>精選寄送紀錄</h1>
+      <form method="post" action="/admin/deliveries/run"><button class="btn ghost" type="submit">▶ 手動觸發今日精選 (測試)</button></form>
     </div>
     <div class="card">
       <table>

@@ -88,7 +88,7 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
         )}
       </div>
 
-      {/* 每日報牌：鎖定高評分 + 免費參考 */}
+      {/* 每日精選：鎖定高評分 + 免費參考 */}
       <div className="mb-6 grid gap-4 lg:grid-cols-2">
         <LockedPicks picks={d.lockedPicks} gameName={d.name} />
         <FreePicks picks={d.freePicks} gameName={d.name} />
@@ -187,7 +187,7 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
           desc="自由調整觀測窗（近 10 / 30 / 50 / 100 期），找出最適合你打法的統計尺度。"
         />
         <LockedModule
-          title="每日 LINE 報牌推播"
+          title="每日 LINE 精選推播"
           tier="進階會員"
           desc="每天開獎前自動把 AI 高評分精選號推到你的 LINE，不必每天上站。"
         />

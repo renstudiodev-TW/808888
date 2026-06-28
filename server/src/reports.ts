@@ -1,4 +1,4 @@
-// 每日報牌：讀完整分析 (data/full，含未遮罩的高評分號) → 推播給有效訂閱會員。
+// 每日精選：讀完整分析 (data/full，含未遮罩的高評分號) → 推播給有效訂閱會員。
 // 由後台手動觸發 (測試) 或正式環境的 Cloudflare Cron 觸發。
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
@@ -39,13 +39,13 @@ export function loadFull(game: string): FullBundle | null {
   }
 }
 
-/** 產生某彩種的報牌文字 (含高評分精選號，僅付費會員可收) */
+/** 產生某彩種的精選文字 (含高評分精選號，僅付費會員可收) */
 export function buildReportText(game: string): string | null {
   const b = loadFull(game);
   if (!b || !b.latest) return null;
   const top = b.score.slice(0, b.pick).map((s) => String(s.n).padStart(2, "0"));
   return [
-    `🔮 808888 ${b.name} 每日報牌`,
+    `🔮 808888 ${b.name} 每日精選`,
     `期別參考：${b.latest.period}（${b.latest.date}）`,
     ``,
     `AI 高評分精選 ${b.pick} 碼：`,
@@ -56,7 +56,7 @@ export function buildReportText(game: string): string | null {
 }
 
 /**
- * 觸發報牌：對所有「啟用推播 + 訂閱達 pro 以上 + 帳號正常」的會員推送。
+ * 觸發精選：對所有「啟用推播 + 訂閱達 pro 以上 + 帳號正常」的會員推送。
  * 回傳寄送摘要。
  */
 export async function runDailyReport(game = "daily539"): Promise<{ total: number; sent: number; skipped: number; stub: boolean }> {

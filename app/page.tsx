@@ -75,10 +75,10 @@ export default async function Home() {
         <LatestDraws />
       </section>
 
-      {/* 今日報牌 (539) */}
+      {/* 今日精選 (539) */}
       <section className="mb-16">
         <div className="mb-4 flex items-end justify-between">
-          <h2 className="font-display text-2xl font-extrabold text-[var(--text)] sm:text-3xl">今日報牌 · 今彩539</h2>
+          <h2 className="font-display text-2xl font-extrabold text-[var(--text)] sm:text-3xl">今日精選 · 今彩539</h2>
           <Link href="/games/daily539" className="text-sm text-[var(--neon)] hover:underline">完整分析 →</Link>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
@@ -129,7 +129,7 @@ export default async function Home() {
           {[
             { n: "1", t: "抓官方開獎", d: "每日自動同步台灣彩券公開開獎結果，建立完整歷史資料庫。" },
             { n: "2", t: "多技巧演算", d: "冷熱、遺漏、尾數、拖牌、生肖、型態等十多項指標同步計算。" },
-            { n: "3", t: "AI 綜合評分", d: "多指標加權整合成單一分數排名，每日報牌、高評分精選解鎖。" },
+            { n: "3", t: "AI 綜合評分", d: "多指標加權整合成單一分數排名，每日精選、高評分精選解鎖。" },
           ].map((s) => (
             <div key={s.n} className="glass p-5">
               <div className="num mb-2 text-2xl font-bold text-[var(--primary)]">0{s.n}</div>

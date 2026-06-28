@@ -68,7 +68,7 @@ export const Layout: FC<PropsWithChildren<{ title: string; session?: { name: str
             <nav>
               <a href="/admin">儀表板</a>
               <a href="/admin/members">會員</a>
-              <a href="/admin/deliveries">報牌紀錄</a>
+              <a href="/admin/deliveries">精選紀錄</a>
               <a href="/admin/audit">稽核</a>
               <a href="/admin/logout">登出</a>
             </nav>

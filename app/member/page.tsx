@@ -78,7 +78,7 @@ export default function MemberPage() {
     return (
       <div className="mx-auto max-w-2xl px-5 py-20 text-center">
         <h1 className="font-display text-2xl font-bold text-[var(--text)]">尚未登入</h1>
-        <p className="mt-3 text-[var(--muted)]">用 LINE 登入即可查看會員專區、管理報牌推播。</p>
+        <p className="mt-3 text-[var(--muted)]">用 LINE 登入即可查看會員專區、管理精選推播。</p>
         <a
           href="/auth/line/login"
           className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-[#06C755] px-6 py-2.5 text-base font-bold text-white transition hover:brightness-110"
@@ -126,11 +126,11 @@ export default function MemberPage() {
         </div>
       </div>
 
-      {/* 報牌推播開關 */}
+      {/* 精選推播開關 */}
       <div className="glass mt-4 p-5">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="font-bold text-[var(--text)]">每日 LINE 報牌推播</div>
+            <div className="font-bold text-[var(--text)]">每日 LINE 精選推播</div>
             <div className="mt-1 text-[13px] text-[var(--muted)]">
               開啟後，開獎前由 808888 官方帳號把當日精選號推給你（需為官方帳號好友）。
             </div>

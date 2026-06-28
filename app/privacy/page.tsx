@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section heading="二、利用目的">
-        <p>您的資料用於會員身分識別、報牌與通知推播、金流付款處理、客戶服務與服務品質改善。</p>
+        <p>您的資料用於會員身分識別、精選與通知推播、金流付款處理、客戶服務與服務品質改善。</p>
       </Section>
 
       <Section heading="三、第三方服務">
