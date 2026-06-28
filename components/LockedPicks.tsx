@@ -42,7 +42,11 @@ export function LockedPicks({ picks, gameName }: { picks: LockedTeaser[]; gameNa
         ))}
       </div>
 
-      <div className="mt-6 flex flex-col items-center gap-2">
+      <p className="mt-4 text-center text-[11px] leading-relaxed text-[var(--muted)]">
+        ※ 分數為各號碼的相對綜合評分（0–100），僅供號碼間比較參考，<strong className="text-[var(--text)]">不是中獎機率</strong>。
+      </p>
+
+      <div className="mt-4 flex flex-col items-center gap-2">
         <Link href="/pricing" className="btn-primary w-full sm:w-auto">
           🔓 解鎖完整號碼
         </Link>

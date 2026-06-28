@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   description: shareDesc,
   applicationName: "808888.tw",
   keywords: [
-    "今彩539", "大樂透", "威力彩", "樂透分析", "樂透明牌", "冷熱號", "遺漏值",
+    "今彩539", "大樂透", "威力彩", "樂透分析", "樂透統計", "冷熱號", "遺漏值",
     "拖牌", "尾數", "AI 選號", "樂透統計", "開獎號碼", "樂透走勢", "抓牌技巧", "538",
   ],
   alternates: { canonical: "/" },

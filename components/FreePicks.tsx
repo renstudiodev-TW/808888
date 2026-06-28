@@ -23,6 +23,9 @@ export function FreePicks({
           <NumberBall key={p.n} n={p.n} tone="cold" size="lg" sub={p.score.toFixed(1)} />
         ))}
       </div>
+      <p className="mt-4 text-[11px] leading-relaxed text-[var(--muted)]">
+        ※ 號碼下方數字為相對綜合評分（0–100），僅供號碼間比較參考，<strong className="text-[var(--text)]">不是中獎機率</strong>。
+      </p>
     </div>
   );
 }
