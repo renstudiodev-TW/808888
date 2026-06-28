@@ -91,7 +91,7 @@ function Footer() {
           購買彩券請理性節制，未滿 18 歲不得購買。
         </div>
         <div className="flex flex-col items-start justify-between gap-2 sm:flex-row">
-          <span>© {new Date().getFullYear()} 808888 · 由 仁格數位科技工坊 開發</span>
+          <span>© {new Date().getFullYear()} 808888.tw · 仁格數位科技工坊開發 renstudio.tw</span>
           <span className="text-[var(--muted)]">資料來源：台灣彩券公開開獎結果</span>
         </div>
       </div>
