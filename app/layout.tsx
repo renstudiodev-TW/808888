@@ -35,6 +35,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: shareTitle,
   description: shareDesc,
+  applicationName: "808888.tw",
+  keywords: [
+    "今彩539", "大樂透", "威力彩", "樂透分析", "樂透明牌", "冷熱號", "遺漏值",
+    "拖牌", "尾數", "AI 選號", "樂透統計", "開獎號碼", "樂透走勢", "抓牌技巧", "538",
+  ],
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   openGraph: {
     type: "website",
     locale: "zh_TW",
@@ -124,6 +131,25 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${spaceGrotesk.variable} ${jetbrains.variable} ${noto.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "808888.tw",
+              alternateName: "808888 樂透抓牌 AI 分析",
+              url: siteUrl,
+              description: shareDesc,
+              inLanguage: "zh-Hant",
+              publisher: {
+                "@type": "Organization",
+                name: "仁格數位科技工坊",
+                url: "https://renstudio.tw",
+              },
+            }),
+          }}
+        />
         <a
           href={LINE_ADD_URL}
           target="_blank"

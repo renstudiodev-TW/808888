@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadGame, SHIPPING_GAMES } from "@/lib/data";
@@ -15,6 +16,23 @@ import { ConsecutiveStats } from "@/components/ConsecutiveStats";
 
 export function generateStaticParams() {
   return SHIPPING_GAMES.map((game) => ({ game }));
+}
+
+const SEO: Record<string, { name: string; kw: string }> = {
+  daily539: { name: "今彩539", kw: "今彩539 冷熱號、遺漏值、尾數、區間、拖牌版路、和值走勢與 AI 選號" },
+  lotto649: { name: "大樂透", kw: "大樂透 冷熱號、遺漏、特別號、尾數、拖牌與 AI 選號" },
+  superLotto638: { name: "威力彩", kw: "威力彩 第一區第二區冷熱號、遺漏、和值走勢與 AI 選號" },
+};
+
+export async function generateMetadata({ params }: { params: Promise<{ game: string }> }): Promise<Metadata> {
+  const { game } = await params;
+  const m = SEO[game];
+  if (!m) return {};
+  return {
+    title: `${m.name}抓牌分析 · 冷熱號遺漏AI選號｜808888.tw`,
+    description: `${m.kw}。每日開獎前自動更新，把台灣民間抓牌技巧用 AI 統計算給你看。僅供參考娛樂，無法保證中獎。`,
+    alternates: { canonical: `/games/${game}/` },
+  };
 }
 
 export const dynamicParams = false;
