@@ -38,7 +38,13 @@ export function CodeRain({ className = "" }: { className?: string }) {
     resize();
     window.addEventListener("resize", resize);
 
-    const frame = () => {
+    // 節流：每隔 stepMs 才推進一次雨滴，數字越大雨越慢（60fps 約等於 16ms）。
+    const stepMs = 95;
+    let last = 0;
+    const frame = (t: number) => {
+      raf = requestAnimationFrame(frame);
+      if (t - last < stepMs) return;
+      last = t;
       ctx.fillStyle = "rgba(8, 11, 16, 0.12)";
       ctx.fillRect(0, 0, cw, ch);
       ctx.font = `${fontSize}px ui-monospace, monospace`;
@@ -52,7 +58,6 @@ export function CodeRain({ className = "" }: { className?: string }) {
         if (y > ch && Math.random() > 0.975) drops[i] = 0;
         drops[i] += 1;
       }
-      raf = requestAnimationFrame(frame);
     };
 
     if (reduce) {
