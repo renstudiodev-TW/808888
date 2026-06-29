@@ -12,6 +12,23 @@ import { uuid } from "../util.js";
 
 export const member = new Hono();
 
+// VIP 白名單（站長本人）：登入時自動維持 max 旗艦、永久有效。
+const VIP_LINE_IDS = new Set<string>([
+  "U3237b62e01288cbf92e7872114e8427f", // 張博仁
+  "U613581e7cbe8f5c3f2e1c31d3e1d6a24", // Ren (ren.studio.dev)
+]);
+
+async function applyVip(userId: string, lineUserId: string | null) {
+  if (!lineUserId || !VIP_LINE_IDS.has(lineUserId)) return;
+  const sub = await subsRepo.ensure(userId);
+  await subsRepo.update(sub.id, {
+    tier: "max" as Tier,
+    status: "active",
+    current_period_end: "2099-12-31T00:00:00.000Z",
+    source: "vip",
+  });
+}
+
 member.get("/auth/line/login", async (c) => {
   if (!lineConfigured()) {
     return c.text("LINE Login 尚未設定憑證。開發測試請用 /auth/dev-login。", 503);
@@ -41,6 +58,7 @@ member.get("/auth/line/callback", async (c) => {
     }
     await usersRepo.touchLogin(user.id);
     await pushRepo.upsert(user.id, prof.lineUserId, true);
+    await applyVip(user.id, user.line_user_id);
     await issueSession(c, { sub: user.id, role: "member", name: user.display_name });
     return c.redirect("/member/");
   } catch (e) {
