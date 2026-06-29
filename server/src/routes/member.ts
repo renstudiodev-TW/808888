@@ -8,7 +8,7 @@ import { loadFull } from "../reports.js";
 import { tierMeets, PLAN_SEED } from "../plans.js";
 import type { Tier } from "../plans.js";
 import { createSubscriptionCheckout, parseNotify } from "../integrations/newebpay.js";
-import { liveAnalyze, liveDrag } from "../analyze-live.js";
+import { liveAnalyze, liveDrag, liveMethodPicks } from "../analyze-live.js";
 import { uuid } from "../util.js";
 
 export const member = new Hono();
@@ -113,6 +113,19 @@ member.get("/api/me/analyze", requireMember, async (c) => {
   const game = c.req.query("game") ?? "daily539";
   const window = parseInt(c.req.query("window") ?? "50", 10);
   const result = liveAnalyze(game, window);
+  if (!result) return c.json({ error: "no data" }, 404);
+  return c.json(result);
+});
+
+// 複數抓牌法交叉選牌（旗艦）。
+member.get("/api/me/cross", requireMember, async (c) => {
+  const s = c.get("session") as { sub: string };
+  const sub = await subsRepo.ensure(s.sub);
+  if (!tierMeets(sub.tier, "max")) return c.json({ error: "需要旗艦會員" }, 403);
+  const game = c.req.query("game") ?? "daily539";
+  const window = parseInt(c.req.query("window") ?? "50", 10);
+  const n = parseInt(c.req.query("n") ?? "8", 10);
+  const result = liveMethodPicks(game, window, n);
   if (!result) return c.json({ error: "no data" }, 404);
   return c.json(result);
 });

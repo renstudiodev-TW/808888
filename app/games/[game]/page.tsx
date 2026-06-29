@@ -16,6 +16,7 @@ import { SumTrendChart } from "@/components/SumTrendChart";
 import { ConsecutiveStats } from "@/components/ConsecutiveStats";
 import { SecondAreaSection } from "@/components/SecondAreaSection";
 import { CustomWindowPanel } from "@/components/CustomWindowPanel";
+import { CrossSelectPanel } from "@/components/CrossSelectPanel";
 import { MethodLeaderboard } from "@/components/MethodLeaderboard";
 
 export function generateStaticParams() {
@@ -102,6 +103,11 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
 
       {/* 旗艦自訂分析母數 */}
       <CustomWindowPanel game={game} />
+
+      {/* 旗艦複數抓牌法交叉選牌 */}
+      <div className="mb-6">
+        <CrossSelectPanel game={game} />
+      </div>
 
       {/* 抓法命中率成績榜 */}
       {d.leaderboard && (
@@ -216,7 +222,7 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
               <span className="text-[var(--cold)]">✓</span> <b className="text-[var(--text)]">每日 LINE 精選推播</b>：至會員專區開啟（需加官方帳號 @808888.tw 好友）
             </li>
             <li className="text-[var(--muted)]">
-              <span>⏳</span> <b className="text-[var(--text)]">複數抓牌法交叉選牌</b>：開發中，敬請期待
+              <span className="text-[#ffd24a]">✓</span> <b className="text-[var(--text)]">複數抓牌法交叉選牌</b>：見上方「👑 複數抓牌法交叉選牌」（旗艦）
             </li>
           </ul>
           <Link href="/member/" className="btn-ghost mt-4 !px-4 !py-2 text-sm">前往會員專區</Link>

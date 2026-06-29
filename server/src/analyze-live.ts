@@ -1,8 +1,9 @@
 // 旗艦會員自訂母數即時重算：用打包進 Worker 的完整歷史，依指定視窗重算冷熱/尾數/區間/評分。
 import historyData from "./data/history.json";
 import { GAMES } from "../../lib/lottery/games.js";
-import { hotCold, tailDistribution, zoneStats, secondAreaStats, dragFor } from "../../lib/lottery/indicators.js";
+import { hotCold, omission, tailDistribution, zoneStats, secondAreaStats, dragFor } from "../../lib/lottery/indicators.js";
 import { comboScore } from "../../lib/lottery/score.js";
+import { tailOf, zoneOf } from "../../lib/lottery/util.js";
 import type { Draw, GameId } from "../../lib/lottery/types.js";
 
 const HIST = historyData as Record<string, Draw[]>;
@@ -33,6 +34,46 @@ export function liveDrag(game: string) {
     date: latest.date,
     latestNumbers: latest.numbers,
     drags: latest.numbers.map((a) => dragFor(history, g, a, 5)),
+  };
+}
+
+// 複數抓牌法交叉選牌：回傳每種抓法的前 N 名號碼，前端做交集／聯集。
+export function liveMethodPicks(game: string, window: number, n: number) {
+  const g = GAMES[game as GameId];
+  const history = HIST[game];
+  if (!g || !history || history.length === 0) return null;
+  const w = Math.max(10, Math.min(Math.floor(window) || 50, history.length));
+  const N = Math.max(3, Math.min(Math.floor(n) || 8, g.pool));
+
+  const rankByMap = (val: (n: number) => number) => {
+    const arr: { n: number; s: number }[] = [];
+    for (let i = 1; i <= g.pool; i++) arr.push({ n: i, s: val(i) });
+    arr.sort((a, b) => b.s - a.s);
+    return arr.slice(0, N).map((x) => x.n);
+  };
+
+  const hc = hotCold(history, g, w);
+  const zMap = new Map(hc.map((h) => [h.n, h.z]));
+  const om = omission(history, g);
+  const ratioMap = new Map(om.map((o) => [o.n, o.ratio]));
+  const tails = tailDistribution(history, g, w);
+  const tailRate = new Map(tails.map((t) => [t.tail, t.rate]));
+  const zones = zoneStats(history, g, 10, w);
+  const zoneRate = new Map(zones.map((z) => [z.zone, z.rate]));
+
+  return {
+    game,
+    name: g.name,
+    window: w,
+    n: N,
+    pool: g.pool,
+    methods: {
+      score: comboScore(history, g, { window: w }).slice(0, N).map((s) => s.n),
+      hot: rankByMap((x) => zMap.get(x) ?? 0),
+      omission: rankByMap((x) => ratioMap.get(x) ?? 0),
+      tail: rankByMap((x) => tailRate.get(tailOf(x)) ?? 0),
+      zone: rankByMap((x) => zoneRate.get(zoneOf(x, 10)) ?? 0),
+    },
   };
 }
 

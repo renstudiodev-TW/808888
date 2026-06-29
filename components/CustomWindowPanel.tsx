@@ -94,14 +94,17 @@ export function CustomWindowPanel({ game }: { game: string }) {
 
       {data && (
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          {/* AI 評分精選 */}
+          {/* AI 評分精選（每號附評分，本站精華） */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/60 p-4">
-            <div className="mb-2 text-sm font-bold text-[var(--text)]">本視窗 AI 評分精選</div>
-            <div className="flex flex-wrap gap-2">
+            <div className="mb-3 text-sm font-bold text-[var(--text)]">本視窗 AI 評分精選</div>
+            <div className="flex flex-wrap gap-3">
               {data.score.slice(0, 8).map((s) => (
-                <span key={s.n} className="num inline-flex h-10 w-10 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#6bffc0,var(--cold))] text-sm font-bold text-[#04221a]">
-                  {pad(s.n)}
-                </span>
+                <div key={s.n} className="flex flex-col items-center gap-1">
+                  <span className="num inline-flex h-11 w-11 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#6bffc0,var(--cold))] text-base font-bold text-[#04221a]">
+                    {pad(s.n)}
+                  </span>
+                  <span className="num text-xs font-bold text-[var(--cold)]">{s.score.toFixed(1)}</span>
+                </div>
               ))}
             </div>
           </div>
@@ -123,8 +126,9 @@ export function CustomWindowPanel({ game }: { game: string }) {
         </div>
       )}
 
-      <p className="mt-3 text-[11px] text-[var(--muted)]">
-        ※ 視窗越短越反映近期趨勢、越長越穩定。分數為相對綜合評分，不是中獎機率。
+      <p className="mt-4 rounded-lg border border-[rgba(255,210,74,0.35)] bg-[rgba(255,210,74,0.07)] p-3 text-sm leading-relaxed text-[var(--text)]">
+        視窗越短越反映近期趨勢、越長越穩定。
+        <strong className="text-[#ffd24a]">分數為相對綜合評分，不是中獎機率。</strong>
       </p>
     </section>
   );
