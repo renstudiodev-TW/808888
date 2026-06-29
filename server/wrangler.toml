@@ -33,11 +33,14 @@ database_name = "lottery808888"
 database_id = "301abaf2-a599-4c94-9bad-8f3c20a8f1ef"
 migrations_dir = "migrations"
 
-# 每日報牌 Cron（09:00 台灣 = 01:00 UTC；可調）
+# 每日 Cron（Cloudflare 觸發，比 GitHub 排程可靠）
+#   15:00 UTC = 23:00 台灣 → 開獎後觸發 GitHub 重建分析資料
+#   01:00 UTC = 09:00 台灣 → 推播今彩539精選給付費會員
 [triggers]
-crons = ["0 1 * * *"]
+crons = ["0 15 * * *", "0 1 * * *"]
 
 # 非機密變數（機密用 `wrangler secret put`）
 [vars]
 BASE_URL = "https://808888.tw"
 LINE_CALLBACK_URL = "https://808888.tw/auth/line/callback"
+GH_REPO = "renstudiodev-TW/808888"

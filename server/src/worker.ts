@@ -23,6 +23,30 @@ export interface Env {
   NEWEBPAY_MERCHANT_ID?: string;
   NEWEBPAY_HASH_KEY?: string;
   NEWEBPAY_HASH_IV?: string;
+  GH_PAT?: string; // GitHub PAT（Actions:write），給 Cron 觸發每日資料重建用
+  GH_REPO?: string; // owner/repo，預設 renstudiodev-TW/808888
+}
+
+// 由 Cloudflare Cron 可靠觸發 GitHub 的每日資料更新 workflow（比 GitHub 自身排程穩）。
+async function triggerGitHubRebuild(env: Env): Promise<void> {
+  if (!env.GH_PAT) {
+    console.log("[cron] GH_PAT 未設定，略過資料重建觸發");
+    return;
+  }
+  const repo = env.GH_REPO || "renstudiodev-TW/808888";
+  const url = `https://api.github.com/repos/${repo}/actions/workflows/daily-update.yml/dispatches`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.GH_PAT}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "808888-worker-cron",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ref: "main" }),
+  });
+  console.log(`[cron] 觸發 GitHub 重建 → ${res.status} ${res.status === 204 ? "OK" : await res.text()}`);
 }
 
 // 把 Worker 的 env 字串變數併入 process.env，讓 config 的 getter 讀得到。
@@ -61,10 +85,16 @@ app.all("*", async (c) => {
 
 export default {
   fetch: app.fetch,
-  // Cloudflare Cron Trigger → 每日精選（資料來源 Phase C 接 KV/R2；目前 loadFull 在 Workers 回 null 即 no-op）
-  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  // Cloudflare Cron Triggers（可靠，不像 GitHub 排程會飄）：
+  //   15:00 UTC (23:00 台灣) → 開獎後觸發 GitHub 重建當日分析資料
+  //   01:00 UTC (09:00 台灣) → 推播當日今彩539精選給付費會員
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     applyEnv(env);
-    ctx.waitUntil(dbAls.run(new D1Db(env.DB), () => runDailyReport("daily539").then(() => undefined)));
+    if (event.cron === "0 15 * * *") {
+      ctx.waitUntil(triggerGitHubRebuild(env));
+    } else {
+      ctx.waitUntil(dbAls.run(new D1Db(env.DB), () => runDailyReport("daily539").then(() => undefined)));
+    }
   },
 };
 
