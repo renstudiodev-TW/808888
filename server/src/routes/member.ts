@@ -55,7 +55,16 @@ member.get("/auth/line/callback", async (c) => {
         picture_url: prof.pictureUrl ?? null,
         email: prof.email ?? null,
       });
-      await subsRepo.ensure(user.id);
+      // 首次註冊送 14 天旗艦試用（不含每日 LINE 推播，那是付費專屬）。
+      const sub = await subsRepo.ensure(user.id);
+      const end = new Date();
+      end.setDate(end.getDate() + 14);
+      await subsRepo.update(sub.id, {
+        tier: "max",
+        status: "trial",
+        current_period_end: end.toISOString(),
+        source: "trial",
+      });
     }
     await usersRepo.touchLogin(user.id);
     await pushRepo.upsert(user.id, prof.lineUserId, true);
@@ -91,24 +100,28 @@ member.get("/api/me", requireMember, async (c) => {
   const s = c.get("session") as { sub: string };
   const user = await usersRepo.byId(s.sub);
   if (!user) return c.json({ error: "not found" }, 404);
-  const sub = await subsRepo.ensure(user.id);
+  const sub = await subsRepo.ensureActive(user.id);
   const push = await pushRepo.forUser(user.id);
+  // 每日 LINE 推播為正式付費（active）會員專屬，試用(trial)不含。
+  const canPush = tierMeets(sub.tier, "pro") && sub.status === "active";
   return c.json({
     id: user.id,
     name: user.display_name,
     picture: user.picture_url,
     tier: sub.tier,
     subStatus: sub.status,
+    source: sub.source,
     periodEnd: sub.current_period_end,
     hasLine: Boolean(user.line_user_id),
     pushEnabled: push ? Boolean(push.enabled) : false,
+    canPush,
   });
 });
 
 // 旗艦會員自訂母數即時分析：可選任意視窗期數重算。
 member.get("/api/me/analyze", requireMember, async (c) => {
   const s = c.get("session") as { sub: string };
-  const sub = await subsRepo.ensure(s.sub);
+  const sub = await subsRepo.ensureActive(s.sub);
   if (!tierMeets(sub.tier, "max")) return c.json({ error: "需要旗艦會員" }, 403);
   const game = c.req.query("game") ?? "daily539";
   const window = parseInt(c.req.query("window") ?? "50", 10);
@@ -120,7 +133,7 @@ member.get("/api/me/analyze", requireMember, async (c) => {
 // 複數抓牌法交叉選牌（旗艦）。
 member.get("/api/me/cross", requireMember, async (c) => {
   const s = c.get("session") as { sub: string };
-  const sub = await subsRepo.ensure(s.sub);
+  const sub = await subsRepo.ensureActive(s.sub);
   if (!tierMeets(sub.tier, "max")) return c.json({ error: "需要旗艦會員" }, 403);
   const game = c.req.query("game") ?? "daily539";
   const window = parseInt(c.req.query("window") ?? "50", 10);
@@ -133,7 +146,7 @@ member.get("/api/me/cross", requireMember, async (c) => {
 // 拖牌/版路分析（進階以上）。
 member.get("/api/me/drag", requireMember, async (c) => {
   const s = c.get("session") as { sub: string };
-  const sub = await subsRepo.ensure(s.sub);
+  const sub = await subsRepo.ensureActive(s.sub);
   if (!tierMeets(sub.tier, "pro")) return c.json({ error: "需要進階以上訂閱" }, 403);
   const game = c.req.query("game") ?? "daily539";
   const result = liveDrag(game);
@@ -144,7 +157,7 @@ member.get("/api/me/drag", requireMember, async (c) => {
 member.get("/api/me/picks", requireMember, async (c) => {
   const s = c.get("session") as { sub: string };
   const game = c.req.query("game") ?? "daily539";
-  const sub = await subsRepo.ensure(s.sub);
+  const sub = await subsRepo.ensureActive(s.sub);
   if (!tierMeets(sub.tier, "pro")) {
     return c.json({ error: "需要進階以上訂閱", tier: sub.tier }, 403);
   }
@@ -169,6 +182,10 @@ member.post("/api/me/push/test", requireMember, async (c) => {
   const s = c.get("session") as { sub: string };
   const user = await usersRepo.byId(s.sub);
   if (!user?.line_user_id) return c.json({ ok: false, error: "無 LINE 綁定" }, 400);
+  const sub = await subsRepo.ensureActive(s.sub);
+  if (!(tierMeets(sub.tier, "pro") && sub.status === "active")) {
+    return c.json({ ok: false, error: "每日 LINE 推播為正式付費會員專屬，試用/免費不含。" }, 403);
+  }
   const res = await pushMessage(user.line_user_id, [
     {
       type: "text",

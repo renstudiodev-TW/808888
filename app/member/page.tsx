@@ -13,6 +13,7 @@ interface Me {
   periodEnd: string | null;
   hasLine: boolean;
   pushEnabled: boolean;
+  canPush: boolean;
 }
 
 const TIER_LABEL: Record<string, string> = { free: "免費會員", pro: "進階會員", max: "旗艦會員" };
@@ -130,43 +131,48 @@ export default function MemberPage() {
       <div className="glass mt-4 p-5">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="font-bold text-[var(--text)]">每日 LINE 精選推播</div>
+            <div className="font-bold text-[var(--text)]">
+              每日 LINE 精選推播
+              <span className="ml-2 rounded-full border border-[rgba(255,210,74,0.5)] bg-[rgba(255,210,74,0.12)] px-2 py-0.5 text-[10px] font-bold text-[#ffd24a]">
+                正式付費專屬
+              </span>
+            </div>
             <div className="mt-1 text-[13px] text-[var(--muted)]">
-              開啟後，開獎前由 808888 官方帳號把當日精選號推給你（需為官方帳號好友）。
+              開獎前由 808888 官方帳號把當日精選號推到你的 LINE。<b className="text-[var(--text)]">此為正式付費會員專屬功能，免費與試用期間不含。</b>
             </div>
           </div>
-          <button
-            onClick={togglePush}
-            disabled={pushBusy}
-            aria-pressed={me.pushEnabled}
-            className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-              me.pushEnabled ? "bg-[var(--cold)]" : "bg-[var(--surface-2)]"
-            } ${pushBusy ? "opacity-60" : ""}`}
-          >
-            <span
-              className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${
-                me.pushEnabled ? "left-6" : "left-1"
-              }`}
-            />
-          </button>
-        </div>
-        <div className="mt-4 border-t border-[var(--border)] pt-4">
-          <button
-            onClick={sendTest}
-            disabled={testBusy}
-            className="btn-ghost !px-4 !py-2 text-sm disabled:opacity-60"
-          >
-            {testBusy ? "發送中…" : "傳一則測試推播給我"}
-          </button>
-          {testMsg && (
-            <p className={`mt-2 text-[13px] ${testMsg.ok ? "text-[var(--cold)]" : "text-[var(--hot)]"}`}>
-              {testMsg.text}
-            </p>
+          {me.canPush && (
+            <button
+              onClick={togglePush}
+              disabled={pushBusy}
+              aria-pressed={me.pushEnabled}
+              className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                me.pushEnabled ? "bg-[var(--cold)]" : "bg-[var(--surface-2)]"
+              } ${pushBusy ? "opacity-60" : ""}`}
+            >
+              <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${me.pushEnabled ? "left-6" : "left-1"}`} />
+            </button>
           )}
-          <p className="mt-2 text-[12px] text-[var(--muted)]">
-            收不到？請先把官方帳號 <span className="text-[var(--neon)]">@808888.tw</span> 加為好友再試。
-          </p>
         </div>
+
+        {me.canPush ? (
+          <div className="mt-4 border-t border-[var(--border)] pt-4">
+            <button onClick={sendTest} disabled={testBusy} className="btn-ghost !px-4 !py-2 text-sm disabled:opacity-60">
+              {testBusy ? "發送中…" : "傳一則測試推播給我"}
+            </button>
+            {testMsg && (
+              <p className={`mt-2 text-[13px] ${testMsg.ok ? "text-[var(--cold)]" : "text-[var(--hot)]"}`}>{testMsg.text}</p>
+            )}
+            <p className="mt-2 text-[12px] text-[var(--muted)]">
+              收不到？請先把官方帳號 <span className="text-[var(--neon)]">@808888.tw</span> 加為好友再試。
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
+            <span className="text-[13px] text-[var(--muted)]">升級正式付費會員，即可每天自動收到 LINE 精選推播。</span>
+            <Link href="/pricing" className="btn-primary shrink-0 !px-4 !py-2 text-sm">升級訂閱</Link>
+          </div>
+        )}
       </div>
 
       {/* 登出 */}

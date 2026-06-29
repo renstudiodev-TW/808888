@@ -108,6 +108,15 @@ export const subsRepo = {
   async ensure(userId: string): Promise<Subscription> {
     return (await subsRepo.forUser(userId)) ?? (await subsRepo.create(userId, "free"));
   },
+  // 取訂閱並強制到期降級：付費/試用過期 → 自動降回免費並標記 expired（持久化）。
+  async ensureActive(userId: string): Promise<Subscription> {
+    const sub = await subsRepo.ensure(userId);
+    if (sub.tier !== "free" && sub.current_period_end && new Date(sub.current_period_end).getTime() < Date.now()) {
+      await subsRepo.update(sub.id, { tier: "free", status: "expired" });
+      return { ...sub, tier: "free", status: "expired" };
+    }
+    return sub;
+  },
   async countByTier(): Promise<Record<string, number>> {
     const rows = await getDb().all<{ tier: string; c: number }>(
       "SELECT tier, COUNT(*) c FROM subscriptions GROUP BY tier"

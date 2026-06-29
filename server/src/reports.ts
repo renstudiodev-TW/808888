@@ -76,11 +76,11 @@ export async function runDailyReport(game = "daily539"): Promise<{ total: number
 
   for (const t of targets) {
     const user = await usersRepo.byId(t.user_id);
-    const sub = await subsRepo.forUser(t.user_id);
-    const eligible = user?.status === "active" && sub && tierMeets(sub.tier, "pro") &&
-      (sub.status === "active" || sub.status === "trial");
+    const sub = await subsRepo.ensureActive(t.user_id);
+    // 每日推播僅限正式付費(active)會員；試用(trial)與免費不送。
+    const eligible = user?.status === "active" && tierMeets(sub.tier, "pro") && sub.status === "active";
     if (!eligible) {
-      await deliveriesRepo.log(t.user_id, game, "line", "skipped", { drawPeriod: period, detail: "未達付費資格" });
+      await deliveriesRepo.log(t.user_id, game, "line", "skipped", { drawPeriod: period, detail: "未達付費資格(試用/免費不含推播)" });
       skipped++;
       continue;
     }
