@@ -8,7 +8,7 @@ import { HotColdGrid } from "@/components/HotColdGrid";
 import { LockedPicks } from "@/components/LockedPicks";
 import { PremiumPicks } from "@/components/PremiumPicks";
 import { FreePicks } from "@/components/FreePicks";
-import { LockedModule } from "@/components/LockedModule";
+import { DragReveal } from "@/components/DragReveal";
 import {
   HotColdChart, OmissionChart, TailChart, ZoneChart, ZodiacChart, SumChart, ACChart,
 } from "@/components/charts";
@@ -199,31 +199,28 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
         </Section>
       </div>
 
-      {/* Premium 鎖定功能 */}
-      <h2 className="mt-10 mb-4 font-display text-xl font-bold text-[var(--text)]">
-        進階分析 <span className="text-sm font-normal text-[var(--muted)]">· 訂閱解鎖</span>
-      </h2>
+      {/* 進階分析 */}
+      <h2 className="mt-10 mb-4 font-display text-xl font-bold text-[var(--text)]">進階分析</h2>
       <div className="grid gap-4 lg:grid-cols-2">
-        <LockedModule
-          title="拖牌 / 版路分析"
-          tier="進階會員"
-          desc="上期號碼最常帶出哪些下期號（共現轉移矩陣），台灣老玩家最核心的拖牌技巧自動化。"
-        />
-        <LockedModule
-          title="複數抓牌法交叉選牌"
-          tier="旗艦會員"
-          desc="同時用冷熱＋遺漏＋拖牌＋尾數等多種技巧取交集／聯集，一鍵縮小候選範圍。"
-        />
-        <LockedModule
-          title="自訂統計區間"
-          tier="旗艦會員"
-          desc="自由調整觀測窗（近 10 / 30 / 50 / 100 期），找出最適合你打法的統計尺度。"
-        />
-        <LockedModule
-          title="每日 LINE 精選推播"
-          tier="進階會員"
-          desc="每天開獎前自動把 AI 高評分精選號推到你的 LINE，不必每天上站。"
-        />
+        {/* 拖牌/版路：進階以上即時解鎖 */}
+        <DragReveal game={game} />
+
+        {/* 其他進階功能指引 */}
+        <section className="glass p-5 sm:p-6">
+          <h2 className="font-display text-lg font-bold text-[var(--text)]">更多進階功能</h2>
+          <ul className="mt-3 space-y-2.5 text-sm">
+            <li className="text-[var(--muted)]">
+              <span className="text-[var(--cold)]">✓</span> <b className="text-[var(--text)]">自訂統計區間</b>：見上方「👑 旗艦自訂分析母數」滑桿（旗艦專屬）
+            </li>
+            <li className="text-[var(--muted)]">
+              <span className="text-[var(--cold)]">✓</span> <b className="text-[var(--text)]">每日 LINE 精選推播</b>：至會員專區開啟（需加官方帳號 @808888.tw 好友）
+            </li>
+            <li className="text-[var(--muted)]">
+              <span>⏳</span> <b className="text-[var(--text)]">複數抓牌法交叉選牌</b>：開發中，敬請期待
+            </li>
+          </ul>
+          <Link href="/member/" className="btn-ghost mt-4 !px-4 !py-2 text-sm">前往會員專區</Link>
+        </section>
       </div>
 
       <p className="mt-8 rounded-xl border border-[rgba(255,42,95,0.2)] bg-[rgba(255,42,95,0.04)] p-4 text-[13px] leading-relaxed text-[var(--muted)]">

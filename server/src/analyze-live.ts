@@ -1,7 +1,7 @@
 // 旗艦會員自訂母數即時重算：用打包進 Worker 的完整歷史，依指定視窗重算冷熱/尾數/區間/評分。
 import historyData from "./data/history.json";
 import { GAMES } from "../../lib/lottery/games.js";
-import { hotCold, tailDistribution, zoneStats, secondAreaStats } from "../../lib/lottery/indicators.js";
+import { hotCold, tailDistribution, zoneStats, secondAreaStats, dragFor } from "../../lib/lottery/indicators.js";
 import { comboScore } from "../../lib/lottery/score.js";
 import type { Draw, GameId } from "../../lib/lottery/types.js";
 
@@ -18,6 +18,22 @@ export interface LiveAnalysis {
   zone: { label: string; rate: number }[];
   score: { n: number; score: number }[];
   secondArea: { n: number; freq: number; currentMiss: number; tag: string }[] | null;
+}
+
+// 拖牌/版路：上一期開出的號碼，最常帶出下一期哪些號（條件機率）。
+export function liveDrag(game: string) {
+  const g = GAMES[game as GameId];
+  const history = HIST[game];
+  if (!g || !history || history.length === 0) return null;
+  const latest = history[history.length - 1];
+  return {
+    game,
+    name: g.name,
+    period: latest.period,
+    date: latest.date,
+    latestNumbers: latest.numbers,
+    drags: latest.numbers.map((a) => dragFor(history, g, a, 5)),
+  };
 }
 
 export function liveAnalyze(game: string, window: number): LiveAnalysis | null {
