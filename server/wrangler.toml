@@ -10,6 +10,7 @@
 
 name = "lottery808888"
 main = "src/worker.ts"
+account_id = "00803e27ecda191573a05f2e02ea7799"
 compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
 
