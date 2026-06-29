@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, JetBrains_Mono, Noto_Sans_TC } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
@@ -42,6 +42,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  appleWebApp: { capable: true, title: "808888.tw", statusBarStyle: "black-translucent" },
   openGraph: {
     type: "website",
     locale: "zh_TW",
@@ -57,6 +58,12 @@ export const metadata: Metadata = {
     description: shareDesc,
     images: ["/caishen.png"],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#080b10",
+  width: "device-width",
+  initialScale: 1,
 };
 
 function Header() {
