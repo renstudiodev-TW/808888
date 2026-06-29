@@ -8,6 +8,7 @@ import {
   type ZodiacItem, type DragResult, type PatternStat, type SecondAreaItem,
 } from "./indicators";
 import { comboScore, type ScoreItem } from "./score";
+import { backtest, type MethodResult } from "./backtest";
 
 export interface AnalysisBundle {
   game: string;
@@ -37,6 +38,7 @@ export interface AnalysisBundle {
   };
   score: ScoreItem[];
   recommendations: number[]; // 綜合評分前 pick*2 名
+  leaderboard: { evaluated: number; pick: number; results: MethodResult[] }; // 抓法命中率回測
   generatedAt: string;
 }
 
@@ -117,6 +119,7 @@ export function analyze(
     },
     score,
     recommendations,
+    leaderboard: backtest(history, g, { k: 80, window }),
     generatedAt: opts.generatedAt,
   };
 }

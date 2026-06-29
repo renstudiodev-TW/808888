@@ -30,6 +30,7 @@ export interface PublicBundle {
   secondArea: AnalysisBundle["secondArea"];
   patterns: AnalysisBundle["patterns"];
   patternSummary: AnalysisBundle["patternSummary"];
+  leaderboard: AnalysisBundle["leaderboard"];
   // 每日精選 (免費)：中評分參考號 (排名 pick..pick*2)，號碼露出
   freePicks: { n: number; score: number }[];
   // 高評分 AI 牌 (付費)：只露分數，號碼遮罩
@@ -73,6 +74,7 @@ export function publicize(full: AnalysisBundle): PublicBundle {
     secondArea: full.secondArea,
     patterns: full.patterns,
     patternSummary: full.patternSummary,
+    leaderboard: full.leaderboard,
     freePicks,
     lockedPicks,
     lockedCount: top.length,

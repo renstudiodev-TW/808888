@@ -16,6 +16,7 @@ import { SumTrendChart } from "@/components/SumTrendChart";
 import { ConsecutiveStats } from "@/components/ConsecutiveStats";
 import { SecondAreaSection } from "@/components/SecondAreaSection";
 import { CustomWindowPanel } from "@/components/CustomWindowPanel";
+import { MethodLeaderboard } from "@/components/MethodLeaderboard";
 
 export function generateStaticParams() {
   return SHIPPING_GAMES.map((game) => ({ game }));
@@ -101,6 +102,19 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
 
       {/* 旗艦自訂分析母數 */}
       <CustomWindowPanel game={game} />
+
+      {/* 抓法命中率成績榜 */}
+      {d.leaderboard && (
+        <div className="mb-6">
+          <Section
+            title="抓法命中率成績榜"
+            tag={`近 ${d.leaderboard.evaluated} 期回測`}
+            subtitle="各抓法歷史平均命中數排名，含隨機對照，幫你選用哪種抓法。"
+          >
+            <MethodLeaderboard data={d.leaderboard} />
+          </Section>
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* 威力彩第二區 (1-8) */}
