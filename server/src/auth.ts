@@ -62,7 +62,8 @@ export const requireAdmin: MiddlewareHandler = async (c, next) => {
     c.set("session", { ...s, role: "admin" });
     return next();
   }
-  return c.redirect("/admin/login");
+  // 未登入 → 去 LINE 登入；已登入但非站長 → 回首頁。
+  return c.redirect(s ? "/" : "/auth/line/login");
 };
 
 /** 會員 API 守衛：未登入回 401 */
@@ -73,7 +74,3 @@ export const requireMember: MiddlewareHandler = async (c, next) => {
   await next();
 };
 
-/** 後台帳密驗證 */
-export function checkAdminCredentials(user: string, pass: string): boolean {
-  return user === config.adminUser && pass === config.adminPassword;
-}

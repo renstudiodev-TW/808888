@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { requireAdmin, issueSession, clearSession, checkAdminCredentials } from "../auth.js";
+import { requireAdmin, clearSession } from "../auth.js";
 import { usersRepo, subsRepo, membersRepo, auditRepo, deliveriesRepo, settingsRepo } from "../repos.js";
-import { LoginPage, Dashboard, MembersPage, MemberDetail, AuditPage, DeliveriesPage } from "../views/pages.js";
+import { Dashboard, MembersPage, MemberDetail, AuditPage, DeliveriesPage } from "../views/pages.js";
 import { lineConfigured, ecpayConfigured, lineMessagingConfigured } from "../config.js";
 import { runDailyReport } from "../reports.js";
 import { addDaysIso } from "../util.js";
@@ -17,23 +17,12 @@ function configWarn(): string[] {
 
 export const admin = new Hono();
 
-admin.get("/login", (c) => c.html(<LoginPage />));
-admin.post("/login", async (c) => {
-  const body = await c.req.parseBody();
-  const user = String(body.user ?? "");
-  const pass = String(body.password ?? "");
-  if (!checkAdminCredentials(user, pass)) {
-    return c.html(<LoginPage error="帳號或密碼錯誤" />);
-  }
-  await issueSession(c, { sub: "admin", role: "admin", name: user });
-  await auditRepo.log(user, "登入後台");
-  return c.redirect("/admin");
-});
 admin.get("/logout", (c) => {
   clearSession(c);
-  return c.redirect("/admin/login");
+  return c.redirect("/");
 });
 
+// 後台改為純 LINE 驗證：站長 LINE 帳號(白名單)登入即可進入，無帳密登入。
 admin.use("/*", requireAdmin);
 
 admin.get("/", async (c) => {
