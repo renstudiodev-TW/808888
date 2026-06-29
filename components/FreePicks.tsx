@@ -9,11 +9,13 @@ export function FreePicks({
   gameName,
   game,
   dataPeriod,
+  window: win = 50,
 }: {
   picks: { n: number; score: number }[];
   gameName: string;
   game: string;
   dataPeriod?: string | null;
+  window?: number;
 }) {
   const { stale } = useFreshness(game, dataPeriod);
 
@@ -32,7 +34,10 @@ export function FreePicks({
         </p>
       ) : (
         <>
-          <p className="mt-1 mb-1 text-[12px] text-[var(--muted)]">資料截至第 {dataPeriod} 期，供下一期參考。</p>
+          <p className="mt-1 mb-1 text-[12px] text-[var(--muted)]">
+            <span className="rounded bg-[rgba(0,255,135,0.12)] px-1.5 py-0.5 font-bold text-[var(--cold)]">近 {win} 期統計</span>
+            {" "}· 資料截至第 {dataPeriod} 期，供下一期參考。
+          </p>
           <p className="mb-5 text-sm text-[var(--muted)]">綜合評分中段的參考號碼，免費提供。高評分精選請見上方解鎖。</p>
           <div className="flex flex-wrap items-start gap-4">
             {picks.map((p) => (

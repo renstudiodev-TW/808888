@@ -13,10 +13,12 @@ interface Pick {
 export function PremiumPicks({
   game,
   gameName,
+  window: win = 50,
   children,
 }: {
   game: string;
   gameName: string;
+  window?: number;
   children: ReactNode;
 }) {
   const [state, setState] = useState<"loading" | "locked" | "unlocked">("loading");
@@ -64,7 +66,10 @@ export function PremiumPicks({
       <h3 className="font-display text-lg font-bold text-[var(--text)]">
         本期 {gameName} AI 高評分精選 <span className="num text-[var(--cold)]">{picks.length}</span> 碼
       </h3>
-      <p className="mt-1 text-[12px] text-[var(--muted)]">資料截至第 {period} 期，供下一期參考（進階／旗艦會員專屬）。</p>
+      <p className="mt-1 text-[12px] text-[var(--muted)]">
+        <span className="rounded bg-[rgba(0,255,135,0.12)] px-1.5 py-0.5 font-bold text-[var(--cold)]">近 {win} 期統計</span>
+        {" "}· 資料截至第 {period} 期，供下一期參考（進階／旗艦會員專屬）。
+      </p>
       <div className="mt-5 flex flex-wrap items-start gap-4">
         {picks.map((p) => (
           <div key={p.n} className="flex flex-col items-center gap-1">

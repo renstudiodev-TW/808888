@@ -83,10 +83,10 @@ export default async function Home() {
           <Link href="/games/daily539" className="text-sm text-[var(--neon)] hover:underline">完整分析 →</Link>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <PremiumPicks game="daily539" gameName="今彩539">
+          <PremiumPicks game="daily539" gameName="今彩539" window={d539.window}>
             <LockedPicks picks={d539.lockedPicks} gameName="今彩539" />
           </PremiumPicks>
-          <FreePicks picks={d539.freePicks} gameName="今彩539" game="daily539" dataPeriod={d539.latest?.period} />
+          <FreePicks picks={d539.freePicks} gameName="今彩539" game="daily539" dataPeriod={d539.latest?.period} window={d539.window} />
         </div>
       </section>
 
