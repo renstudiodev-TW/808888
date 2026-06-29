@@ -14,6 +14,7 @@ import {
 } from "@/components/charts";
 import { SumTrendChart } from "@/components/SumTrendChart";
 import { ConsecutiveStats } from "@/components/ConsecutiveStats";
+import { SecondAreaSection } from "@/components/SecondAreaSection";
 
 export function generateStaticParams() {
   return SHIPPING_GAMES.map((game) => ({ game }));
@@ -98,6 +99,17 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
+        {/* 威力彩第二區 (1-8) */}
+        {d.secondArea && (
+          <Section
+            title="第二區冷熱 · 1-8"
+            tag="威力彩第二區"
+            subtitle={`近 ${d.window} 期第二區（每期開 1 號）各號的出現次數與遺漏。`}
+          >
+            <SecondAreaSection data={d.secondArea} />
+          </Section>
+        )}
+
         {/* 冷熱號 */}
         <Section title="冷熱號碼盤" tag="近期出現次數" subtitle={`近 ${d.window} 期每個號碼的出現熱度，紅熱綠冷。`}>
           <HotColdGrid data={d.hotCold} />

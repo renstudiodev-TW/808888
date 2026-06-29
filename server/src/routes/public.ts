@@ -78,17 +78,16 @@ async function latestDraw(g: GameMeta, now: Date) {
   if (rows.length === 0) return null;
   // 取 period 最大者
   const latest = rows.reduce((a, b) => (String(b.period ?? "") > String(a.period ?? "") ? b : a));
-  let numbers = [...((latest.drawNumberSize as number[] | undefined) ?? [])].sort((a, b) => a - b);
+  // 台彩 drawNumberSize 把「特別號/第二區」放在陣列最後一個（未排序）。
+  // 必須先抽出最後一個，再對前 pick 個主號排序，否則會把最大號誤當特別號。
+  const raw = (latest.drawNumberSize as number[] | undefined) ?? [];
+  let main = raw;
   let special: number | undefined;
-  if (g.special === "lotto649") {
-    const sp = (latest.lotto649SpecialNumber ?? latest.specialNumber) as number | undefined;
-    if (typeof sp === "number") special = sp;
-    else if (numbers.length === g.pick + 1) { special = numbers[numbers.length - 1]; numbers = numbers.slice(0, g.pick); }
-  } else if (g.special === "super638") {
-    const sp = (latest.superLotto638SecondArea ?? latest.secondAreaNumber) as number | undefined;
-    if (typeof sp === "number") special = sp;
-    else if (numbers.length === g.pick + 1) { special = numbers[numbers.length - 1]; numbers = numbers.slice(0, g.pick); }
+  if ((g.special === "lotto649" || g.special === "super638") && raw.length === g.pick + 1) {
+    special = raw[raw.length - 1];
+    main = raw.slice(0, g.pick);
   }
+  const numbers = [...main].sort((a, b) => a - b);
   if (!latest.period || numbers.length === 0) return null;
   return {
     game: g.id,

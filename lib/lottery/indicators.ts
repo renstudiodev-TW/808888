@@ -256,6 +256,41 @@ export function patternSeries(history: History, g: GameConfig): PatternStat[] {
   });
 }
 
+export interface SecondAreaItem {
+  n: number;
+  freq: number; // 近 W 期出現次數
+  currentMiss: number; // 當前遺漏期數
+  rate: number; // freq / W
+  tag: "hot" | "cold" | "normal";
+}
+
+/** 9. 第二區冷熱／遺漏 (威力彩第二區 1..pool 取 1，存於 special 欄位) */
+export function secondAreaStats(history: History, secondPool: number, w = 50): SecondAreaItem[] {
+  const win = windowSlice(history, w);
+  const W = win.length || 1;
+  const freq = new Array<number>(secondPool + 1).fill(0);
+  for (const d of win) if (typeof d.special === "number") freq[d.special]++;
+  const expected = W / secondPool; // 均勻分佈期望次數
+  const items: SecondAreaItem[] = [];
+  for (let n = 1; n <= secondPool; n++) {
+    // 當前遺漏：從最新往回數，連續幾期沒開出 n
+    let miss = 0;
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].special === n) break;
+      miss++;
+    }
+    const f = freq[n];
+    items.push({
+      n,
+      freq: f,
+      currentMiss: miss,
+      rate: +(f / W).toFixed(3),
+      tag: f > expected * 1.3 ? "hot" : f < expected * 0.7 ? "cold" : "normal",
+    });
+  }
+  return items;
+}
+
 /** 5. 連碰試算 (純數學)：碰數 C(n,r)；若命中 m 個則中 C(m,r) 組 */
 export function comboCalc(pickedCount: number, star: number, betPerCombo: number, oddsPerCombo: number, hit: number) {
   const combos = combination(pickedCount, star);

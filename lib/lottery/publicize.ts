@@ -27,6 +27,7 @@ export interface PublicBundle {
   tail: AnalysisBundle["tail"];
   zone: AnalysisBundle["zone"];
   zodiac: AnalysisBundle["zodiac"];
+  secondArea: AnalysisBundle["secondArea"];
   patterns: AnalysisBundle["patterns"];
   patternSummary: AnalysisBundle["patternSummary"];
   // 每日精選 (免費)：中評分參考號 (排名 pick..pick*2)，號碼露出
@@ -69,6 +70,7 @@ export function publicize(full: AnalysisBundle): PublicBundle {
     tail: full.tail,
     zone: full.zone,
     zodiac: full.zodiac,
+    secondArea: full.secondArea,
     patterns: full.patterns,
     patternSummary: full.patternSummary,
     freePicks,

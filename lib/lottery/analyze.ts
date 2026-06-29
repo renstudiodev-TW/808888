@@ -3,9 +3,9 @@
 import type { Draw, GameConfig, History } from "./types";
 import {
   hotCold, omission, tailDistribution, zoneStats, zodiacStats,
-  coOccurrence, dragFor, patternSeries, expectedSum,
+  coOccurrence, dragFor, patternSeries, expectedSum, secondAreaStats,
   type HotColdItem, type OmissionItem, type TailItem, type ZoneItem,
-  type ZodiacItem, type DragResult, type PatternStat,
+  type ZodiacItem, type DragResult, type PatternStat, type SecondAreaItem,
 } from "./indicators";
 import { comboScore, type ScoreItem } from "./score";
 
@@ -25,6 +25,7 @@ export interface AnalysisBundle {
   tail: TailItem[];
   zone: ZoneItem[];
   zodiac: ZodiacItem[];
+  secondArea: SecondAreaItem[] | null; // 威力彩第二區 1-8 冷熱/遺漏
   drags: DragResult[];
   co: number[][];
   patterns: PatternStat[]; // 最近 60 期
@@ -104,6 +105,7 @@ export function analyze(
     tail: tailDistribution(history, g, window),
     zone: zoneStats(history, g, zoneSize, window),
     zodiac: zodiacStats(history, g, year, window),
+    secondArea: g.second ? secondAreaStats(history, g.second.pool, window) : null,
     drags,
     co: coOccurrence(history, g),
     patterns: patterns.slice(-60),
