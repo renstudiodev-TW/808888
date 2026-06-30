@@ -18,6 +18,13 @@ import { SecondAreaSection } from "@/components/SecondAreaSection";
 import { CustomWindowPanel } from "@/components/CustomWindowPanel";
 import { CrossSelectPanel } from "@/components/CrossSelectPanel";
 import { MethodLeaderboard } from "@/components/MethodLeaderboard";
+import { SelectionProvider } from "@/components/selection/SelectionContext";
+import { SelectionPanel } from "@/components/selection/SelectionPanel";
+import { SelectionSticky } from "@/components/selection/SelectionSticky";
+import {
+  HotColdVerdict, OmissionVerdict, TailVerdict, ZoneVerdict, SumVerdict,
+  OddEvenVerdict, ACVerdict, ConsecutiveVerdict, ZodiacVerdict, SecondAreaVerdict,
+} from "@/components/selection/verdicts";
 
 export function generateStaticParams() {
   return SHIPPING_GAMES.map((game) => ({ game }));
@@ -53,6 +60,12 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
   const topZodiac = [...d.zodiac].sort((a, b) => b.freq - a.freq).slice(0, 3);
 
   return (
+    <SelectionProvider
+      game={game}
+      pool={d.pool}
+      pick={d.pick}
+      secondPool={d.secondArea ? d.secondArea.length : null}
+    >
     <div className="mx-auto max-w-6xl px-5 py-8">
       {/* 標題 + 最新開獎 */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -93,6 +106,10 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
         )}
       </div>
 
+      {/* 自選號碼即時驗牌：選號框 + 黏頂顯示條 */}
+      <SelectionPanel hotCold={d.hotCold} />
+      <SelectionSticky hotCold={d.hotCold} />
+
       {/* 每日精選：鎖定高評分 + 免費參考 */}
       <div className="mb-6 grid gap-4 lg:grid-cols-2">
         <PremiumPicks game={game} gameName={d.name} window={d.window}>
@@ -131,29 +148,34 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
             subtitle={`近 ${d.window} 期第二區（每期開 1 號）各號的出現次數與遺漏。`}
           >
             <SecondAreaSection data={d.secondArea} />
+            <SecondAreaVerdict data={d.secondArea} />
           </Section>
         )}
 
         {/* 冷熱號 */}
         <Section title="冷熱號碼盤" tag="近期出現次數" subtitle={`近 ${d.window} 期每個號碼的出現熱度，紅熱綠冷。`}>
           <HotColdGrid data={d.hotCold} />
+          <HotColdVerdict data={d.hotCold} />
         </Section>
-        <Section title="冷熱長條圖" tag="z-score 判定" subtitle="高於期望值越多越熱，低於越多越冷。">
+        <Section title="冷熱長條圖" tag="z-score 判定" subtitle="高於期望值越多越熱，低於越多越冷。你的號碼會以白框標出。">
           <HotColdChart data={d.hotCold} />
         </Section>
 
         {/* 遺漏值 */}
         <Section title="遺漏值排行" tag="當前遺漏期數" subtitle="距離上次開出最久的前 15 個號碼（玩家常用的「該回補」訊號）。">
           <OmissionChart data={d.omission} />
+          <OmissionVerdict data={d.omission} />
         </Section>
 
         {/* 尾數 + 區間 */}
         <div className="grid gap-4">
           <Section title="尾數分佈" tag="個位 0-9" subtitle="把號碼依尾數分 10 組看冷熱。">
             <TailChart data={d.tail} />
+            <TailVerdict />
           </Section>
           <Section title="區間冷熱" tag="號碼分區" subtitle="各號段近期出現次數。">
             <ZoneChart data={d.zone} />
+            <ZoneVerdict zone={d.zone} />
           </Section>
         </div>
 
@@ -172,14 +194,17 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
             ))}
           </div>
           <ZodiacChart data={d.zodiac} />
+          <ZodiacVerdict pool={d.pool} year={d.year} />
         </Section>
 
         {/* 型態：和值 + AC */}
-        <Section title="和值分佈" tag={`理論平均 ${d.patternSummary.expectedSum}`} subtitle="每期號碼總和的歷史分佈，多數落在中央。">
+        <Section title="和值分佈" tag={`理論平均 ${d.patternSummary.expectedSum}`} subtitle="每期號碼總和的歷史分佈，多數落在中央。你的和值會以白色虛線標出。">
           <SumChart data={d.patternSummary.sumHistogram} />
+          <SumVerdict expectedSum={d.patternSummary.expectedSum} sumHistogram={d.patternSummary.sumHistogram} />
         </Section>
         <Section title="AC 離散值分佈" tag="號碼離散度" subtitle="AC 越大代表號碼越分散，越小越像等差。">
           <ACChart data={d.patternSummary.acHistogram} />
+          <ACVerdict acHistogram={d.patternSummary.acHistogram} />
         </Section>
 
         {/* 奇偶比 */}
@@ -192,6 +217,7 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
               </div>
             ))}
           </div>
+          <OddEvenVerdict oddEven={d.patternSummary.oddEven} />
         </Section>
 
         {/* 和值走勢（均值回歸） */}
@@ -202,6 +228,7 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
         {/* 連號型態 */}
         <Section title="連號型態" tag="相鄰差 1" subtitle="近期出現連續號碼的頻率，用數據破除「號碼要分散」的迷思。">
           <ConsecutiveStats recent={d.recent} />
+          <ConsecutiveVerdict />
         </Section>
       </div>
 
@@ -234,5 +261,6 @@ export default async function GamePage({ params }: { params: Promise<{ game: str
         <strong className="text-[var(--text)]">無法提高中獎率、不保證中獎</strong>，僅供參考娛樂。理性購彩，未滿 18 歲不得購買。
       </p>
     </div>
+    </SelectionProvider>
   );
 }

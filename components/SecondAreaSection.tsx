@@ -1,21 +1,31 @@
+"use client";
+
 import type { SecondAreaItem } from "@/lib/lottery/indicators";
+import { useSelection } from "./selection/SelectionContext";
 
 // 威力彩第二區 (1-8) 冷熱與遺漏。
 export function SecondAreaSection({ data }: { data: SecondAreaItem[] }) {
+  const sel = useSelection();
+  const mySpecial = sel?.special ?? null;
   return (
     <div>
       <div className="flex flex-wrap gap-3">
-        {data.map((s) => (
+        {data.map((s) => {
+          const on = mySpecial === s.n;
+          return (
           <div key={s.n} className="flex flex-col items-center gap-1">
             <span
-              className={`ball text-base ${s.tag === "hot" ? "ball-hot" : s.tag === "cold" ? "ball-cold" : ""}`}
+              className={`ball text-base ${s.tag === "hot" ? "ball-hot" : s.tag === "cold" ? "ball-cold" : ""} ${
+                on ? "ring-2 ring-white ring-offset-2 ring-offset-[var(--surface)]" : ""
+              }`}
             >
               {s.n}
             </span>
             <span className="num text-[11px] text-[var(--muted)]">{s.freq} 次</span>
             <span className="num text-[10px] text-[var(--muted)]">遺漏 {s.currentMiss}</span>
           </div>
-        ))}
+          );
+        })}
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--muted)]">
         <span className="flex items-center gap-1"><i className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--hot)]" />熱</span>
