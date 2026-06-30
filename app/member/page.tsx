@@ -131,7 +131,7 @@ export default function MemberPage() {
             )}
           </div>
           <Link href="/pricing" className="btn-primary !px-5 !py-2 text-sm">
-            {me.tier === "free" ? "升級訂閱" : "管理方案"}
+            {me.tier === "free" ? "升級訂閱" : me.subStatus === "trial" ? "升級為正式會員" : "管理方案"}
           </Link>
         </div>
       </div>

@@ -19,6 +19,8 @@ export function getLoginUrl(state: string, nonce: string): string {
     // email 需另外向 LINE 申請權限審核通過才可加回；先不要 email 避免未審而登入報錯。
     scope: "profile openid",
     nonce,
+    // 登入時順便引導加入官方帳號好友（需在 LINE Login 頻道綁定 Messaging API 官方帳號才生效）。
+    bot_prompt: "aggressive",
   });
   return `https://access.line.me/oauth2/v2.1/authorize?${params}`;
 }
