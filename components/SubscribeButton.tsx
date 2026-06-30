@@ -7,10 +7,12 @@ export function SubscribeButton({
   tier,
   label,
   highlight,
+  gold,
 }: {
   tier: "free" | "pro" | "max";
   label: string;
   highlight?: boolean;
+  gold?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -63,7 +65,8 @@ export function SubscribeButton({
       <button
         onClick={go}
         disabled={busy}
-        className={`mt-6 ${highlight ? "btn-primary" : "btn-ghost"} disabled:opacity-60`}
+        className={`mt-6 ${gold ? "inline-flex items-center justify-center rounded-full px-6 py-3 font-bold" : highlight ? "btn-primary" : "btn-ghost"} disabled:opacity-60`}
+        style={gold ? { background: "linear-gradient(90deg,#ffd24a,#f59e0b)", color: "#3a2a00" } : undefined}
       >
         {busy ? "處理中…" : label}
       </button>

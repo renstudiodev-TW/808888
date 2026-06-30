@@ -144,20 +144,7 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              {t.id === "free" ? (
-                <SubscribeButton tier="free" label={t.cta} highlight={t.highlight} />
-              ) : (
-                <>
-                  <button
-                    disabled
-                    className={`mt-6 opacity-70 ${isMax ? "inline-flex items-center justify-center rounded-full px-6 py-3 font-bold" : "btn-primary"}`}
-                    style={isMax ? { background: "linear-gradient(90deg,#ffd24a,#f59e0b)", color: "#3a2a00" } : undefined}
-                  >
-                    {t.cta}
-                  </button>
-                  <span className="mt-2 text-center text-[11px] text-[var(--muted)]">金流開通中，敬請期待</span>
-                </>
-              )}
+              <SubscribeButton tier={t.id as "free" | "pro" | "max"} label={t.cta} highlight={t.highlight} gold={isMax} />
             </div>
           );
         })}

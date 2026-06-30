@@ -44,3 +44,5 @@ crons = ["0 15 * * *", "0 1 * * *"]
 BASE_URL = "https://808888.tw"
 LINE_CALLBACK_URL = "https://808888.tw/auth/line/callback"
 GH_REPO = "renstudiodev-TW/808888"
+# 藍新金流正式環境（測試站為 https://ccore.newebpay.com/MPG/period）
+NEWEBPAY_API_URL = "https://core.newebpay.com/MPG/period"

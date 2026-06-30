@@ -251,14 +251,14 @@ member.post("/api/pay/newebpay/notify", async (c) => {
   const merOrderNo = String(result.MerchantOrderNo ?? "");
   const order = merOrderNo ? await ordersRepo.byOrderNo(merOrderNo) : undefined;
   if (!order) return c.text("1|order not found", 200); // 回 200 避免藍新重試風暴
-  if (order.status === "paid") return c.text("1|already", 200); // 冪等
 
   if (notify.status !== "SUCCESS") {
     await ordersRepo.markFailed(merOrderNo, JSON.stringify(notify));
     return c.text("1|failed-logged", 200);
   }
 
-  // 開通訂閱：設等級 + 本期到期日（+1 個月）
+  // 定期定額每期(首期+每月續扣)都會送 notify。每次成功就把到期日設為「現在+1個月」。
+  // period_end 為絕對值(非累加)，藍新若重送同一期也只是設成相同日期，天然冪等。
   const end = new Date();
   end.setMonth(end.getMonth() + 1);
   const sub = await subsRepo.ensure(order.user_id);
