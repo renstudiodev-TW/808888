@@ -64,12 +64,13 @@ export const Layout: FC<PropsWithChildren<{ title: string; session?: { name: str
       <body>
         {props.session && (
           <header class="top">
-            <span class="brand">🔮 808888 後台</span>
+            <a href="/" class="brand" title="回首頁">🔮 808888 後台</a>
             <nav>
               <a href="/admin">儀表板</a>
               <a href="/admin/members">會員</a>
               <a href="/admin/deliveries">精選紀錄</a>
               <a href="/admin/audit">稽核</a>
+              <a href="/">回首頁</a>
               <a href="/admin/logout">登出</a>
             </nav>
           </header>
