@@ -115,10 +115,6 @@ function Footer() {
           <Link href="/refund" className="hover:text-[var(--neon)]">退費政策</Link>
           <Link href="/privacy" className="hover:text-[var(--neon)]">隱私權政策</Link>
         </nav>
-        <div className="mb-3 text-[13px] leading-relaxed">
-          <div className="text-[var(--text)]">仁格數位科技工坊　統一編號 61138241</div>
-          <div>高雄市前鎮區武德街153巷17號　聯絡電話 0976-858-794　Email ren.studio.dev@gmail.com</div>
-        </div>
         <div className="mb-3 text-[13px] text-[var(--muted)]">
           <VisitCounter />
         </div>
