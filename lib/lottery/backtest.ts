@@ -71,6 +71,89 @@ const METHODS: { method: string; label: string }[] = [
   { method: "random", label: "隨機亂選（對照組）" },
 ];
 
+// ── 反向驗證：已知某一期開獎，回推「哪個抓法 × 哪組參數」命中最多 ──
+// 誠實框架：這是事後諸葛（已知開獎才回推），不是預測。用來透明呈現工具的擬合力，
+// 並揭露不同抓法/參數的高低起伏，非「保證中獎」。
+
+export interface AttributionEntry {
+  method: string;
+  label: string;
+  window: number; // 0 = 不分視窗（遺漏用全期）
+  hits: number;
+  picks: number[];
+}
+
+export interface ReverseAttribution {
+  period: string;
+  date: string;
+  actual: number[];
+  special: number | null;
+  pick: number;
+  windows: number[];
+  best: AttributionEntry;
+  entries: AttributionEntry[]; // 各抓法的最佳表現，依命中高到低
+  aiHits: number; // 當期 AI 精選（近 50 期）命中，當基準
+  randomHits: number; // 隨機對照平均命中，當基準
+}
+
+/** 對「最新一期」反推最強抓法組合。用開獎前的資料算，避免未卜先知。 */
+export function attributionForLatest(
+  history: History,
+  g: GameConfig,
+  opts: { windows?: number[] } = {}
+): ReverseAttribution | null {
+  if (history.length < 15) return null;
+  const t = history.length - 1;
+  const hist = history.slice(0, t);
+  const draw = history[t];
+  const actual = new Set(draw.numbers);
+  const windows = (opts.windows ?? [10, 20, 30, 50, 80, 120]).filter((w) => w < hist.length);
+  if (windows.length === 0) return null;
+  const hitsOf = (picks: number[]) => picks.filter((n) => actual.has(n)).length;
+
+  const windowed: { method: string; label: string; fn: (w: number) => number[] }[] = [
+    { method: "score", label: "AI 綜合評分", fn: (w) => pickByScore(hist, g, w) },
+    { method: "hot", label: "冷熱號", fn: (w) => pickByHot(hist, g, w) },
+    { method: "tail", label: "尾數", fn: (w) => pickByTail(hist, g, w) },
+    { method: "zone", label: "區間", fn: (w) => pickByZone(hist, g, w) },
+  ];
+
+  const entries: AttributionEntry[] = [];
+  for (const m of windowed) {
+    let best: AttributionEntry = { method: m.method, label: m.label, window: windows[0], hits: -1, picks: [] };
+    for (const w of windows) {
+      const picks = m.fn(w);
+      const h = hitsOf(picks);
+      if (h > best.hits) best = { method: m.method, label: m.label, window: w, hits: h, picks };
+    }
+    entries.push(best);
+  }
+  // 遺漏回補（不分視窗）
+  const omPicks = pickByOmission(hist, g);
+  entries.push({ method: "omission", label: "遺漏回補", window: 0, hits: hitsOf(omPicks), picks: omPicks });
+
+  entries.sort((a, b) => b.hits - a.hits || a.window - b.window);
+
+  // 基準：當期 AI 精選（近 50 期）與隨機平均
+  const aiHits = hitsOf(pickByScore(hist, g, 50));
+  let randTotal = 0;
+  const seeds = 5;
+  for (let s = 0; s < seeds; s++) randTotal += hitsOf(seededPick(g.pool, g.pick, t * 7 + s + 1));
+
+  return {
+    period: draw.period,
+    date: draw.date,
+    actual: draw.numbers,
+    special: draw.special ?? null,
+    pick: g.pick,
+    windows,
+    best: entries[0],
+    entries,
+    aiHits,
+    randomHits: +(randTotal / seeds).toFixed(1),
+  };
+}
+
 export function backtest(history: History, g: GameConfig, opts: { k?: number; window?: number } = {}): {
   evaluated: number;
   pick: number;

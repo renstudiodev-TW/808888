@@ -8,7 +8,7 @@ import {
   type ZodiacItem, type DragResult, type PatternStat, type SecondAreaItem,
 } from "./indicators";
 import { comboScore, type ScoreItem } from "./score";
-import { backtest, type MethodResult } from "./backtest";
+import { backtest, attributionForLatest, type MethodResult, type ReverseAttribution } from "./backtest";
 
 /** 上一期戰績：用「開獎前的資料」算出的 AI 精選，對比該期實際開獎的命中。 */
 export interface LastHit {
@@ -33,6 +33,7 @@ export interface AnalysisBundle {
   window: number;
   latest: Draw | null;
   lastHit: LastHit | null;
+  reverseAttribution: ReverseAttribution | null;
   recent: Draw[]; // 最近 20 期 (走勢圖用)
   hotCold: HotColdItem[];
   omission: OmissionItem[];
@@ -138,6 +139,7 @@ export function analyze(
     window,
     latest: history[history.length - 1] ?? null,
     lastHit,
+    reverseAttribution: attributionForLatest(history, g),
     recent: history.slice(-20),
     hotCold: hotCold(history, g, window),
     omission: omission(history, g),
