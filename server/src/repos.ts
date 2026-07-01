@@ -61,6 +61,9 @@ export const usersRepo = {
   async touchLogin(id: string): Promise<void> {
     await getDb().run("UPDATE users SET last_login_at = ? WHERE id = ?", [nowIso(), id]);
   },
+  async setEmail(id: string, email: string): Promise<void> {
+    await getDb().run("UPDATE users SET email = ? WHERE id = ?", [email, id]);
+  },
   async setStatus(id: string, status: "active" | "suspended"): Promise<void> {
     await getDb().run("UPDATE users SET status = ? WHERE id = ?", [status, id]);
   },

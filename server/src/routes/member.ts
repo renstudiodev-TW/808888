@@ -108,6 +108,7 @@ member.get("/api/me", requireMember, async (c) => {
     id: user.id,
     name: user.display_name,
     picture: user.picture_url,
+    email: user.email,
     tier: sub.tier,
     subStatus: sub.status,
     source: sub.source,
@@ -178,6 +179,19 @@ member.post("/api/me/push", requireMember, async (c) => {
   return c.json({ ok: true, enabled });
 });
 
+// 付款人 Email：LINE 登入通常拿不到 email，訂閱前補填，供藍新扣款通知/電子發票寄送。
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+member.post("/api/me/email", requireMember, async (c) => {
+  const s = c.get("session") as { sub: string };
+  const body = await c.req.parseBody().catch(() => ({}));
+  const email = String((body as Record<string, unknown>).email ?? "").trim().toLowerCase();
+  if (!EMAIL_RE.test(email) || email.length > 254) {
+    return c.json({ ok: false, error: "Email 格式不正確" }, 400);
+  }
+  await usersRepo.setEmail(s.sub, email);
+  return c.json({ ok: true, email });
+});
+
 // 傳一則測試推播給自己（驗證整條 LINE 推播鏈是否打通）。
 member.post("/api/me/push/test", requireMember, async (c) => {
   const s = c.get("session") as { sub: string };
@@ -209,6 +223,13 @@ member.post("/api/pay/checkout", requireMember, async (c) => {
   const plan = PLAN_SEED.find((p) => p.tier === tier && p.priceTwd > 0);
   if (!plan) return c.json({ error: "方案不存在" }, 400);
 
+  // 藍新委託扣款需付款人 Email 寄送扣款通知/電子發票。缺 email 先請前端補填，
+  // 不再自動塞 uXXXX@808888.tw 佔位假信箱（會導致通知/發票寄不到）。
+  const email = (user.email ?? "").trim();
+  if (!EMAIL_RE.test(email)) {
+    return c.json({ error: "請先填寫付款通知 Email", needEmail: true }, 422);
+  }
+
   const merOrderNo = "P" + uuid().replace(/-/g, "").slice(0, 20);
   await ordersRepo.create({ merOrderNo, userId: user.id, tier: plan.tier, amount: plan.priceTwd });
 
@@ -218,7 +239,7 @@ member.post("/api/pay/checkout", requireMember, async (c) => {
     orderNo: merOrderNo,
     amount: plan.priceTwd,
     itemName: `808888 ${plan.name}`,
-    email: user.email ?? `u${user.id.slice(0, 8)}@808888.tw`,
+    email,
     periodType: "M",
     periodPoint: day,
     periodStartType: 2,
