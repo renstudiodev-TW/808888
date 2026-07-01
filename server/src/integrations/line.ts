@@ -53,13 +53,17 @@ export async function exchangeCode(code: string): Promise<LineProfile> {
   return { lineUserId: prof.userId, displayName: prof.displayName, pictureUrl: prof.pictureUrl };
 }
 
+/** LINE 訊息物件（text 或 flex 等）。flex 用來避免號碼被自動偵測成電話撥號連結。 */
+export type LineMessage = { type: string; [key: string]: unknown };
+
 /** 推播訊息給單一使用者 (精選用)。未設定 token 時 stub。 */
 export async function pushMessage(
   toLineUserId: string,
-  messages: Array<{ type: "text"; text: string }>
+  messages: LineMessage[]
 ): Promise<{ ok: boolean; stub?: boolean; status?: number }> {
   if (!lineMessagingConfigured()) {
-    console.log(`[LINE stub] push → ${toLineUserId}:`, messages.map((m) => m.text).join(" / "));
+    const preview = messages.map((m) => (typeof m.text === "string" ? m.text : (m.altText as string) ?? m.type)).join(" / ");
+    console.log(`[LINE stub] push → ${toLineUserId}:`, preview);
     return { ok: true, stub: true };
   }
   const res = await fetch("https://api.line.me/v2/bot/message/push", {

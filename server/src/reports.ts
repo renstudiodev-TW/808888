@@ -3,10 +3,13 @@
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { pushMessage } from "./integrations/line.js";
+import { pushMessage, type LineMessage } from "./integrations/line.js";
 import { pushRepo, subsRepo, deliveriesRepo, usersRepo, settingsRepo } from "./repos.js";
 import { canReceivePush } from "./plans.js";
+import { config } from "./config.js";
 import fullPicks from "./data/full-picks.json";
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 interface FullBundle {
   name: string;
@@ -95,12 +98,104 @@ export function buildCombinedText(games: string[]): string | null {
 }
 
 /**
+ * 把每日精選建成 LINE Flex 訊息。
+ * 用 Flex 的原因：純文字訊息中 LINE 會自動把「808888」與長數字偵測成電話撥號連結，
+ * 且無法關閉。Flex 的 text 不會被自動連結（號碼不會變連結），而品牌「808888」可用
+ * uri action 綁成網站連結。
+ */
+export function buildCombinedFlex(games: string[]): LineMessage | null {
+  const sections: { name: string; period: string; top: string[] }[] = [];
+  for (const g of games) {
+    const b = loadFull(g);
+    if (!b || !b.latest) continue;
+    sections.push({ name: b.name, period: b.latest.period, top: b.score.slice(0, b.pick).map((s) => pad2(s.n)) });
+  }
+  if (sections.length === 0) return null;
+  const url = config.baseUrl;
+
+  const body: Record<string, unknown>[] = [
+    {
+      type: "box",
+      layout: "baseline",
+      contents: [
+        { type: "text", text: "🔮", flex: 0, size: "lg" },
+        // 只有「808888」是連結，點了開網站（非撥號）
+        { type: "text", text: "808888", flex: 0, size: "lg", weight: "bold", color: "#06b6c7", margin: "sm", action: { type: "uri", label: "808888", uri: url } },
+        { type: "text", text: "今日精選", size: "lg", weight: "bold", margin: "sm" },
+      ],
+    },
+  ];
+  for (const s of sections) {
+    body.push({ type: "separator", margin: "md" });
+    body.push({ type: "text", text: `${s.name}　參考期 ${s.period}`, size: "sm", color: "#8b93a1", margin: "md", wrap: true });
+    // 號碼在 flex text 內，不會被自動連結
+    body.push({ type: "text", text: `AI 高評分精選：${s.top.join("、")}`, size: "md", weight: "bold", wrap: true });
+  }
+  body.push({ type: "separator", margin: "md" });
+  body.push({ type: "text", text: "⚠️ 樂透為獨立隨機事件，僅供參考娛樂，不保證中獎。", size: "xxs", color: "#99a0ad", wrap: true, margin: "md" });
+
+  return {
+    type: "flex",
+    altText: `808888 今日精選：${sections.map((s) => `${s.name} ${s.top.join("、")}`).join("；")}`,
+    contents: {
+      type: "bubble",
+      body: { type: "box", layout: "vertical", spacing: "sm", contents: body },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          { type: "button", style: "primary", color: "#8b5cf6", height: "sm", action: { type: "uri", label: "看完整分析 · 808888.tw", uri: url } },
+        ],
+      },
+    },
+  };
+}
+
+/** 測試推播的 Flex（同樣讓 808888 是網站連結、其他不出現撥號連結）。 */
+export function buildTestFlex(): LineMessage {
+  const url = config.baseUrl;
+  return {
+    type: "flex",
+    altText: "808888 測試推播：你已成功開通 LINE 精選推播！",
+    contents: {
+      type: "bubble",
+      body: {
+        type: "box",
+        layout: "vertical",
+        spacing: "sm",
+        contents: [
+          {
+            type: "box",
+            layout: "baseline",
+            contents: [
+              { type: "text", text: "🔮", flex: 0, size: "lg" },
+              { type: "text", text: "808888", flex: 0, size: "lg", weight: "bold", color: "#06b6c7", margin: "sm", action: { type: "uri", label: "808888", uri: url } },
+              { type: "text", text: "測試推播", size: "lg", weight: "bold", margin: "sm" },
+            ],
+          },
+          { type: "text", text: "你已成功開通 LINE 精選推播！開獎前老師傅會把當日精選號送到這裡。", size: "sm", wrap: true, margin: "md" },
+          { type: "separator", margin: "md" },
+          { type: "text", text: "⚠️ 樂透為獨立隨機事件，僅供參考娛樂，不保證中獎。", size: "xxs", color: "#99a0ad", wrap: true, margin: "md" },
+        ],
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          { type: "button", style: "primary", color: "#8b5cf6", height: "sm", action: { type: "uri", label: "看完整分析 · 808888.tw", uri: url } },
+        ],
+      },
+    },
+  };
+}
+
+/**
  * 觸發精選：把「指定彩種（預設今日開獎的）」合併成一則，推給有效付費會員。
  * 回傳寄送摘要。
  */
 export async function runDailyReport(games: string[] = ["daily539"]): Promise<{ total: number; sent: number; skipped: number; stub: boolean }> {
-  const text = buildCombinedText(games);
-  if (!text) return { total: 0, sent: 0, skipped: 0, stub: false };
+  const flex = buildCombinedFlex(games);
+  if (!flex) return { total: 0, sent: 0, skipped: 0, stub: false };
   // 全域推播開關（後台可關閉，控制 LINE 成本）。
   if (!(await settingsRepo.isPushEnabled())) return { total: 0, sent: 0, skipped: 0, stub: false };
 
@@ -121,7 +216,7 @@ export async function runDailyReport(games: string[] = ["daily539"]): Promise<{ 
       skipped++;
       continue;
     }
-    const res = await pushMessage(t.line_user_id, [{ type: "text", text }]);
+    const res = await pushMessage(t.line_user_id, [flex]);
     if (res.stub) stub = true;
     await deliveriesRepo.log(t.user_id, label, "line", res.ok ? "sent" : "failed", {
       detail: res.stub ? "LINE stub (未設定 token)" : `status ${res.status ?? ""}`,

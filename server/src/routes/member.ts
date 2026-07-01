@@ -4,7 +4,7 @@ import { requireMember, issueSession, clearSession, isAdminUser } from "../auth.
 import { getLoginUrl, exchangeCode, pushMessage } from "../integrations/line.js";
 import { usersRepo, subsRepo, pushRepo, ordersRepo, auditRepo } from "../repos.js";
 import { lineConfigured, config, ecpayConfigured } from "../config.js";
-import { loadFull } from "../reports.js";
+import { loadFull, buildTestFlex } from "../reports.js";
 import { tierMeets, canReceivePush, PLAN_SEED } from "../plans.js";
 import type { Tier } from "../plans.js";
 import { createSubscriptionCheckout, parseNotify } from "../integrations/newebpay.js";
@@ -187,12 +187,7 @@ member.post("/api/me/push/test", requireMember, async (c) => {
   if (!canReceivePush(sub.tier, sub.status)) {
     return c.json({ ok: false, error: "每日 LINE 推播需進階以上的付費或試用資格，試用到期後請訂閱。" }, 403);
   }
-  const res = await pushMessage(user.line_user_id, [
-    {
-      type: "text",
-      text: "🔮 808888 測試推播\n你已成功開通 LINE 精選推播！開獎前老師傅會把當日精選號送到這裡。\n\n⚠️ 樂透為獨立隨機事件，僅供參考娛樂，不保證中獎。",
-    },
-  ]);
+  const res = await pushMessage(user.line_user_id, [buildTestFlex()]);
   if (res.stub) return c.json({ ok: false, error: "推播未設定（缺 access token）" }, 503);
   if (!res.ok) {
     // 最常見：用戶尚未加 808888 官方帳號好友 → LINE 拒收
