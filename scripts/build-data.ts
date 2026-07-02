@@ -20,7 +20,9 @@ const ROOT = path.resolve(__dirname, "..");
 const RAW_DIR = path.join(ROOT, "data", "raw");
 const FULL_DIR = path.join(ROOT, "data", "full"); // 完整分析 (私有，未來認證 API 用)
 const OUT_DIR = path.join(ROOT, "public", "data"); // 公開遮罩版 (前端)
-const PICKS_LOG = path.join(FULL_DIR, "picks-log.json"); // 已發布精選號歷史 (近日去重用)
+// 已發布精選號歷史 (近日去重/強制輪替用)。放 data/ 根目錄 (受版控)，
+// 不可放 data/full/ (被 gitignore、CI 不 commit → 每次跑都空 → 功能形同虛設)。
+const PICKS_LOG = path.join(ROOT, "data", "picks-log.json");
 
 const RECENCY_LOOKBACK = 3; // 去重回看期數
 const PICKS_LOG_KEEP = 60; // 每個遊戲保留幾筆
