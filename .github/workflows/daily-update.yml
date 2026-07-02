@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "808888-bot"
           git config user.email "bot@808888.tw"
-          git add data/raw public/data server/src/data/full-picks.json
+          git add data/raw data/picks-log.json public/data server/src/data/full-picks.json
           if git diff --cached --quiet; then
             echo "No data changes to commit."
           else
