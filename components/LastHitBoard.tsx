@@ -4,6 +4,12 @@ import { Confetti } from "./Confetti";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+// 各遊戲第二區/特別號的稱呼。今彩539 無 → 不顯示。
+const SPECIAL_LABEL: Record<string, string> = {
+  superLotto638: "第二區",
+  lotto649: "特別號",
+};
+
 interface LastHit {
   period: string;
   date: string;
@@ -53,6 +59,16 @@ export function LastHitBoard({ items }: { items: { game: string; name: string; l
                 );
               })}
             </div>
+
+            {/* 實際開出的第二區／特別號（AI 精選僅第一區，這裡揭露實際結果） */}
+            {h.special != null && (
+              <div className="relative mt-2 flex items-center gap-1.5 text-[12px] text-[var(--muted)]">
+                <span>{SPECIAL_LABEL[game] ?? "特別號"}開出</span>
+                <span className="num inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#8b5cf6]/50 bg-[rgba(139,92,246,0.14)] text-[13px] font-bold text-[#a78bfa]">
+                  {pad(h.special)}
+                </span>
+              </div>
+            )}
 
             {/* 戰績 */}
             <div className="relative mt-3">
