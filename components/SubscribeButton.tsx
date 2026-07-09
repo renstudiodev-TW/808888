@@ -8,11 +8,13 @@ export function SubscribeButton({
   label,
   highlight,
   gold,
+  cycle = "M",
 }: {
   tier: "free" | "pro" | "max";
   label: string;
   highlight?: boolean;
   gold?: boolean;
+  cycle?: "M" | "Y";
 }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function SubscribeButton({
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ tier }),
+      body: new URLSearchParams({ tier, cycle }),
     });
     if (r.status === 401) {
       window.location.href = "/auth/line/login";

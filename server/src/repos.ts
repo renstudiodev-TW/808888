@@ -209,6 +209,7 @@ export interface Order {
   user_id: string;
   tier: string;
   amount: number;
+  cycle: string;
   status: string;
   period_no: string | null;
   trade_no: string | null;
@@ -218,12 +219,12 @@ export interface Order {
 }
 
 export const ordersRepo = {
-  async create(o: { merOrderNo: string; userId: string; tier: string; amount: number }): Promise<void> {
+  async create(o: { merOrderNo: string; userId: string; tier: string; amount: number; cycle: "M" | "Y" }): Promise<void> {
     const now = nowIso();
     await getDb().run(
-      `INSERT INTO orders (mer_order_no, user_id, tier, amount, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
-      [o.merOrderNo, o.userId, o.tier, o.amount, now, now]
+      `INSERT INTO orders (mer_order_no, user_id, tier, amount, cycle, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`,
+      [o.merOrderNo, o.userId, o.tier, o.amount, o.cycle, now, now]
     );
   },
   async byOrderNo(merOrderNo: string): Promise<Order | undefined> {

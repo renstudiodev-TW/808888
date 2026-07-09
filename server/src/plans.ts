@@ -6,6 +6,8 @@ export interface PlanSeed {
   tier: Tier;
   name: string;
   priceTwd: number;
+  /** 年繳金額（選填）。目前只有旗艦提供年繳優惠。 */
+  annualPriceTwd?: number;
   features: string[];
   sortOrder: number;
 }
@@ -21,14 +23,15 @@ export const PLAN_SEED: PlanSeed[] = [
   {
     tier: "pro",
     name: "進階會員",
-    priceTwd: 199,
+    priceTwd: 99,
     sortOrder: 1,
     features: ["完整 AI 高評分精選號碼", "拖牌/版路分析", "評分組成明細", "每日 LINE 精選推播", "全彩種"],
   },
   {
     tier: "max",
     name: "旗艦會員",
-    priceTwd: 499,
+    priceTwd: 188,
+    annualPriceTwd: 1688,
     sortOrder: 2,
     features: ["自訂統計區間", "複數抓牌法交叉選牌", "歷史回測", "連碰/立柱獎金試算器", "新功能優先"],
   },

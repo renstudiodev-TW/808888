@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SubscribeButton } from "@/components/SubscribeButton";
+import { MaxTierPricing } from "@/components/MaxTierPricing";
 
 export const metadata: Metadata = {
   title: "訂閱方案 · 進階 AI 精選與拖牌版路｜808888.tw",
@@ -42,7 +43,7 @@ const TIERS: Tier[] = [
   {
     id: "pro",
     name: "進階會員",
-    price: "199",
+    price: "99",
     unit: "/ 月",
     tagline: "解鎖 AI 精選與拖牌版路",
     highlight: true,
@@ -61,7 +62,7 @@ const TIERS: Tier[] = [
   {
     id: "max",
     name: "旗艦會員",
-    price: "499",
+    price: "188",
     unit: "/ 月",
     tagline: "進階玩家的完整武器庫",
     cta: "訂閱旗艦",
@@ -124,13 +125,17 @@ export default function PricingPage() {
                 {!isMax ? <span className="text-[var(--text)]">{t.name}</span> : t.name}
               </h2>
               <p className="mt-1 text-sm text-[var(--muted)]">{t.tagline}</p>
-              <div className="mt-4 flex items-end gap-1">
-                <span className="num text-sm text-[var(--muted)]">NT$</span>
-                <span className="num text-4xl font-bold" style={isMax ? { color: gold } : undefined}>
-                  {!isMax ? <span className="text-[var(--text)]">{t.price}</span> : t.price}
-                </span>
-                <span className="mb-1 text-sm text-[var(--muted)]">{t.unit}</span>
-              </div>
+              {isMax ? (
+                <MaxTierPricing monthly={188} annual={1688} gold={gold} />
+              ) : (
+                <div className="mt-4 flex items-end gap-1">
+                  <span className="num text-sm text-[var(--muted)]">NT$</span>
+                  <span className="num text-4xl font-bold">
+                    <span className="text-[var(--text)]">{t.price}</span>
+                  </span>
+                  <span className="mb-1 text-sm text-[var(--muted)]">{t.unit}</span>
+                </div>
+              )}
               <ul className="mt-5 flex-1 space-y-2 text-sm">
                 {t.features.map((f, i) => (
                   <li
@@ -144,7 +149,9 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <SubscribeButton tier={t.id as "free" | "pro" | "max"} label={t.cta} highlight={t.highlight} gold={isMax} />
+              {!isMax && (
+                <SubscribeButton tier={t.id as "free" | "pro"} label={t.cta} highlight={t.highlight} />
+              )}
             </div>
           );
         })}

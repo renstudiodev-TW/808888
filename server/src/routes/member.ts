@@ -220,8 +220,11 @@ member.post("/api/pay/checkout", requireMember, async (c) => {
   if (!user) return c.json({ error: "not found" }, 404);
   const body = await c.req.parseBody().catch(() => ({}));
   const tier = String((body as Record<string, unknown>).tier ?? "");
+  const cycle: "M" | "Y" = String((body as Record<string, unknown>).cycle ?? "M") === "Y" ? "Y" : "M";
   const plan = PLAN_SEED.find((p) => p.tier === tier && p.priceTwd > 0);
   if (!plan) return c.json({ error: "方案不存在" }, 400);
+  if (cycle === "Y" && !plan.annualPriceTwd) return c.json({ error: "此方案不支援年繳" }, 400);
+  const amount = cycle === "Y" ? plan.annualPriceTwd! : plan.priceTwd;
 
   // 藍新委託扣款需付款人 Email 寄送扣款通知/電子發票。缺 email 先請前端補填，
   // 不再自動塞 uXXXX@808888.tw 佔位假信箱（會導致通知/發票寄不到）。
@@ -231,17 +234,22 @@ member.post("/api/pay/checkout", requireMember, async (c) => {
   }
 
   const merOrderNo = "P" + uuid().replace(/-/g, "").slice(0, 20);
-  await ordersRepo.create({ merOrderNo, userId: user.id, tier: plan.tier, amount: plan.priceTwd });
+  await ordersRepo.create({ merOrderNo, userId: user.id, tier: plan.tier, amount, cycle });
 
   const base = config.baseUrl;
-  const day = String(new Date().getUTCDate()).padStart(2, "0"); // 每月扣款日
+  const now = new Date();
+  // 月繳：每月固定扣款「日」(01~31)；年繳：週年扣款「月日」(MMDD)。
+  const periodPoint =
+    cycle === "Y"
+      ? String(now.getUTCMonth() + 1).padStart(2, "0") + String(now.getUTCDate()).padStart(2, "0")
+      : String(now.getUTCDate()).padStart(2, "0");
   const checkout = createSubscriptionCheckout({
     orderNo: merOrderNo,
-    amount: plan.priceTwd,
-    itemName: `808888 ${plan.name}`,
+    amount,
+    itemName: `808888 ${plan.name}${cycle === "Y" ? "（年繳）" : ""}`,
     email,
-    periodType: "M",
-    periodPoint: day,
+    periodType: cycle,
+    periodPoint,
     periodStartType: 2,
     returnUrl: `${base}/api/pay/return`,
     notifyUrl: `${base}/api/pay/newebpay/notify`,
@@ -283,10 +291,12 @@ member.post("/api/pay/newebpay/notify", async (c) => {
     return c.text("1|failed-logged", 200);
   }
 
-  // 定期定額每期(首期+每月續扣)都會送 notify。每次成功就把到期日設為「現在+1個月」。
+  // 定期定額每期(首期+續扣)都會送 notify。每次成功就把到期日設為「現在+1個計費週期」
+  // (月繳+1個月／年繳+1年，週期存在下單當下的 order.cycle)。
   // period_end 為絕對值(非累加)，藍新若重送同一期也只是設成相同日期，天然冪等。
   const end = new Date();
-  end.setMonth(end.getMonth() + 1);
+  if (order.cycle === "Y") end.setFullYear(end.getFullYear() + 1);
+  else end.setMonth(end.getMonth() + 1);
   const sub = await subsRepo.ensure(order.user_id);
   await subsRepo.update(sub.id, {
     tier: order.tier as Tier,

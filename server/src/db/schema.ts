@@ -60,5 +60,24 @@ CREATE TABLE IF NOT EXISTS plans (
   features    TEXT NOT NULL,
   sort_order  INTEGER NOT NULL DEFAULT 0,
   active      INTEGER NOT NULL DEFAULT 1
-)
+);
+CREATE TABLE IF NOT EXISTS orders (
+  mer_order_no  TEXT PRIMARY KEY,
+  user_id       TEXT NOT NULL,
+  tier          TEXT NOT NULL,
+  amount        INTEGER NOT NULL,
+  cycle         TEXT NOT NULL DEFAULT 'M',
+  status        TEXT NOT NULL DEFAULT 'pending',
+  period_no     TEXT,
+  trade_no      TEXT,
+  raw           TEXT,
+  created_at    TEXT NOT NULL,
+  updated_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+CREATE TABLE IF NOT EXISTS counters (
+  key   TEXT PRIMARY KEY,
+  value INTEGER NOT NULL DEFAULT 0
+);
+INSERT OR IGNORE INTO counters (key, value) VALUES ('visits', 0);
 `.trim();
