@@ -19,6 +19,8 @@ interface LastHit {
   matched: number[];
   count: number;
   pick: number;
+  predictedSpecial: number | null;
+  specialHit: boolean;
 }
 
 export function LastHitBoard({ items }: { items: { game: string; name: string; lastHit: LastHit | null }[] }) {
@@ -60,13 +62,29 @@ export function LastHitBoard({ items }: { items: { game: string; name: string; l
               })}
             </div>
 
-            {/* 實際開出的第二區／特別號（AI 精選僅第一區，這裡揭露實際結果） */}
+            {/* AI 精選特別號／第二區 vs 實際開出，命中同樣給金球 */}
             {h.special != null && (
-              <div className="relative mt-2 flex items-center gap-1.5 text-[12px] text-[var(--muted)]">
-                <span>{SPECIAL_LABEL[game] ?? "特別號"}開出</span>
-                <span className="num inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#8b5cf6]/50 bg-[rgba(139,92,246,0.14)] text-[13px] font-bold text-[#a78bfa]">
+              <div className="relative mt-2 flex flex-wrap items-center gap-1.5 text-[12px] text-[var(--muted)]">
+                <span>{SPECIAL_LABEL[game] ?? "特別號"}</span>
+                {h.predictedSpecial != null && (
+                  <>
+                    <span className="num inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] text-[13px] font-bold text-[var(--muted)]">
+                      {pad(h.predictedSpecial)}
+                    </span>
+                    <span>AI 精選</span>
+                    <span className="px-0.5">→</span>
+                  </>
+                )}
+                <span
+                  className={`num inline-flex h-7 w-7 items-center justify-center rounded-full border text-[13px] font-bold ${
+                    h.specialHit
+                      ? "ball-hit"
+                      : "border-[#8b5cf6]/50 bg-[rgba(139,92,246,0.14)] text-[#a78bfa]"
+                  }`}
+                >
                   {pad(h.special)}
                 </span>
+                <span>實際開出{h.specialHit ? "，命中！🎯" : ""}</span>
               </div>
             )}
 
@@ -74,11 +92,15 @@ export function LastHitBoard({ items }: { items: { game: string; name: string; l
             <div className="relative mt-3">
               {big ? (
                 <span className="celebrate-banner throb-gold inline-flex rounded-lg border border-[#ffd24a]/60 bg-[rgba(255,210,74,0.12)] px-3 py-1.5 text-sm font-extrabold text-[#ffd24a]">
-                  🎉 神準命中 {h.count}/{h.pick} 碼
+                  🎉 神準命中 {h.count}/{h.pick} 碼{h.specialHit ? `＋${SPECIAL_LABEL[game] ?? "特別號"}` : ""}
                 </span>
               ) : h.count > 0 ? (
                 <span className="inline-flex rounded-lg border border-[#ffd24a]/40 bg-[rgba(255,210,74,0.07)] px-3 py-1.5 text-sm font-bold text-[#ffd24a]">
-                  ✨ 命中 {h.count}/{h.pick} 碼
+                  ✨ 命中 {h.count}/{h.pick} 碼{h.specialHit ? `＋${SPECIAL_LABEL[game] ?? "特別號"}` : ""}
+                </span>
+              ) : h.specialHit ? (
+                <span className="inline-flex rounded-lg border border-[var(--primary)]/50 bg-[rgba(139,92,246,0.1)] px-3 py-1.5 text-sm font-bold text-[var(--primary)]">
+                  ✨ {SPECIAL_LABEL[game] ?? "特別號"}中了！
                 </span>
               ) : (
                 <span className="text-[13px] text-[var(--muted)]">這期 AI 精選未命中（{h.pick} 碼全落空）</span>

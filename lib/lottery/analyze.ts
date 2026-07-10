@@ -20,6 +20,8 @@ export interface LastHit {
   matched: number[]; // predicted ∩ actual
   count: number;
   pick: number;
+  predictedSpecial: number | null; // AI 精選特別號／第二區（用開獎前資料的冷熱最熱 1 號）
+  specialHit: boolean; // predictedSpecial 是否命中實際開出的特別號／第二區
 }
 
 export interface AnalysisBundle {
@@ -126,15 +128,31 @@ export function analyze(
       .sort((a, b) => a - b);
     const actualSet = new Set(latestDraw.numbers);
     const matched = predicted.filter((n) => actualSet.has(n));
+
+    // 特別號／第二區 AI 精選：用開獎前資料算冷熱，取最熱門 1 號當精選值，可比對命中。
+    // 大樂透特別號與主區同池(1..pool)、威力彩第二區用 g.second.pool，其餘無特別號則不算。
+    const specialPool = g.second?.pool ?? (g.hasSpecial ? g.pool : 0);
+    let predictedSpecial: number | null = null;
+    if (specialPool > 0) {
+      const items = secondAreaStats(prior, specialPool, window)
+        .slice()
+        .sort((a, b) => b.freq - a.freq || a.n - b.n);
+      predictedSpecial = items[0]?.n ?? null;
+    }
+    const actualSpecial = latestDraw.special ?? null;
+    const specialHit = predictedSpecial != null && predictedSpecial === actualSpecial;
+
     lastHit = {
       period: latestDraw.period,
       date: latestDraw.date,
       actual: latestDraw.numbers,
-      special: latestDraw.special ?? null,
+      special: actualSpecial,
       predicted,
       matched,
       count: matched.length,
       pick: g.pick,
+      predictedSpecial,
+      specialHit,
     };
   }
 
