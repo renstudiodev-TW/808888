@@ -23,6 +23,7 @@ const GAME_META: Record<string, { emoji: string; desc: string }> = {
 export default async function Home() {
   const [index, ...bundles] = await Promise.all([loadIndex(), ...SHIPPING_GAMES.map((g) => loadGame(g))]);
   const d539 = bundles[SHIPPING_GAMES.indexOf("daily539")];
+  const d649 = bundles[SHIPPING_GAMES.indexOf("lotto649")];
   const lastHitItems = SHIPPING_GAMES.map((g, i) => ({
     game: g,
     name: bundles[i].name,
@@ -107,6 +108,20 @@ export default async function Home() {
             <LockedPicks picks={d539.lockedPicks} gameName="今彩539" />
           </PremiumPicks>
           <FreePicks picks={d539.freePicks} gameName="今彩539" game="daily539" dataPeriod={d539.latest?.period} window={d539.window} />
+        </div>
+      </section>
+
+      {/* 今日精選 (大樂透) */}
+      <section className="mb-16">
+        <div className="mb-4 flex items-end justify-between">
+          <h2 className="font-display text-2xl font-extrabold text-[var(--text)] sm:text-3xl">今日精選 · 大樂透</h2>
+          <Link href="/games/lotto649" className="text-sm text-[var(--neon)] hover:underline">完整分析 →</Link>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PremiumPicks game="lotto649" gameName="大樂透" window={d649.window}>
+            <LockedPicks picks={d649.lockedPicks} gameName="大樂透" />
+          </PremiumPicks>
+          <FreePicks picks={d649.freePicks} gameName="大樂透" game="lotto649" dataPeriod={d649.latest?.period} window={d649.window} />
         </div>
       </section>
 
