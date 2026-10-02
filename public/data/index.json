@@ -3,14 +3,14 @@
     {
       "game": "daily539",
       "name": "今彩539",
-      "totalDraws": 1806,
-      "latest": "2026-10-01"
+      "totalDraws": 1807,
+      "latest": "2026-10-02"
     },
     {
       "game": "lotto649",
       "name": "大樂透",
-      "totalDraws": 784,
-      "latest": "2026-09-29"
+      "totalDraws": 785,
+      "latest": "2026-10-02"
     },
     {
       "game": "superLotto638",
@@ -19,5 +19,5 @@
       "latest": "2026-10-01"
     }
   ],
-  "generatedAt": "2026-10-01T19:58:36.548Z"
+  "generatedAt": "2026-10-02T15:01:36.718Z"
 }
