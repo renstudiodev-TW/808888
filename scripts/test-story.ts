@@ -2,7 +2,7 @@
 import { STORY_GAMES, STORY_GAME_ORDER } from "../lib/story/games";
 import { QUESTIONS, getQuestionById } from "../lib/story/questions";
 import { computeStoryNumbers, mulberry32, cyrb53, type NumberInput } from "../lib/story/numbers";
-import { validateStoryRequest, checkStoryOutput } from "../lib/story/validate";
+import { validateStoryRequest, checkStoryOutput, normalizeIpIdentity } from "../lib/story/validate";
 import { buildTemplateStory, TEMPLATE_COUNT } from "../lib/story/templates";
 import type { Question } from "../lib/story/types";
 
@@ -178,6 +178,48 @@ ok(!checkStoryOutput("", [2]).ok, "AI 檢查：空字串不通過");
 ok(!checkStoryOutput("號碼 2、17、25、33、39、41。", [2, 17, 25, 33, 39, 41], 8).ok, "AI 檢查：威力彩缺第二區不通過");
 ok(checkStoryOutput("號碼 2、17、25、33、36、37，第二區 8。", [2, 17, 25, 33, 36, 37], 8).ok, "AI 檢查：威力彩含第二區通過");
 ok(!checkStoryOutput("號碼 2、17、25、33、36、37，第二區 18。", [2, 17, 25, 33, 36, 37], 8).ok, "AI 檢查：第二區 8 只出現在 18 裡不通過");
+
+
+// ───── 6. IPv6 /64 正規化 ─────
+{
+  const n = normalizeIpIdentity;
+  ok(n("2001:db8::1") === n("2001:db8:0:0:ffff::2"), "IPv6：同一個 /64 得到同一身分");
+  ok(n("2001:db8::1") !== n("2001:db8:0:1::1"), "IPv6：不同 /64 身分不同");
+  ok(n("2001:DB8:0:0:0:0:0:1") === n("2001:db8::1"), "IPv6：大小寫與完整寫法一致");
+  ok(n("::1") === n("0:0:0:0:1:2:3:4"), "IPv6：:: 開頭展開正確");
+  ok(n("1.2.3.4") === "1.2.3.4", "IPv4 維持完整位址");
+  ok(n("::ffff:1.2.3.4") === "1.2.3.4", "IPv4-mapped IPv6 視為 IPv4");
+  ok(n("unknown") === "unknown", "無法解析時原樣回傳");
+  ok(n("2001:db8:1:2:3:4:5:6%eth0") === n("2001:db8:1:2::9"), "IPv6：去掉 zone id");
+}
+
+// ───── 7. 零寬字元、簡體字輸入 ─────
+{
+  ok(isInvalid(withText("自\u200b殺")), "零寬字元拆開的不當字詞拒絕");
+  ok(isInvalid(withText("幹\u202e你\u2060娘")) && isInvalid(withText("\ufeff毒\u200d品")), "方向控制與其他零寬字元拆字拒絕");
+  const r = withText("黑\u200b貓\u200f");
+  ok(r.ok && r.answers[2].value === "黑貓", "零寬字元被移除後正常通過");
+  const s = withText("今天买了咖啡");
+  ok(isInvalid(s) && !s.ok && s.message.includes("繁體中文") && s.message.includes("第 3 題"), "簡體字輸入拒絕並指出題號");
+  ok(withText("今天買了咖啡").ok, "繁體字輸入通過");
+}
+
+// ───── 8. 輸出檢查新規則 ─────
+{
+  const chk = (extra: string) => checkStoryOutput(`記下 2、17、25。${extra}`, [2, 17, 25]);
+  ok(chk("").ok, "新檢查：基本故事通過");
+  ok(!chk("去看 www.abc.tw").ok && !chk("到 http://x.y").ok && !chk("上 abc.com 看").ok, "輸出檢查：網址不通過");
+  ok(!chk("他說幹你娘").ok && !chk("想去自殺").ok, "輸出檢查：不當字詞不通過");
+  for (const w of ["官方", "公告", "加賴", "加LINE", "加 line", "LINE ID", "已中獎", "恭喜中獎", "中獎了", "頭獎得主", "匯款", "轉帳"]) {
+    ok(!chk(`這是${w}喔`).ok, `輸出檢查：含「${w}」不通過`);
+  }
+  ok(!chk("電話 0912345678").ok && !chk("編號 12345678").ok, "輸出檢查：連續 8 碼以上數字不通過");
+  ok(chk("記得 1234567 這串").ok, "輸出檢查：7 碼數字不誤擋");
+  ok(!chk("帳號 abc_123").ok && !chk("id line.id99").ok && !chk("找 abc123def").ok, "輸出檢查：英數帳號樣式不通過");
+  ok(chk("在 7-ELEVEN 買了 Coffee").ok && chk("他說 Hello World. 然後走了").ok, "輸出檢查：單純英文字不誤擋");
+  ok(chk("今彩539 開獎前的 3.5 小時").ok && chk("下午 10:30 到站").ok, "輸出檢查：一般數字與時間不誤擋");
+  ok(checkStoryOutput(good, [2, 17, 25, 33, 39]).ok, "輸出檢查：正常故事不誤擋");
+}
 
 // ───── 摘要 ─────
 console.log(`\n通過 ${pass} 項，失敗 ${fails.length} 項`);

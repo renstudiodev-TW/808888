@@ -31,9 +31,51 @@ function bad(message: string): ValidateResult {
   return { ok: false, code: "invalid_answer", message };
 }
 
-/** 清理文字題：去控制字元（換行、tab 等一併去掉）後去頭尾空白 */
+// 零寬與方向控制字元（可拿來拆開不當字詞繞過過濾）
+const INVISIBLE_CHARS = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
+
+/** 清理文字題：去零寬與方向控制字元、控制字元（換行、tab 等一併去掉）後去頭尾空白 */
 export function cleanText(s: string): string {
-  return s.replace(CONTROL_CHARS, "").trim();
+  return s.replace(INVISIBLE_CHARS, "").replace(CONTROL_CHARS, "").trim();
+}
+
+function hasSimplified(s: string): boolean {
+  for (const ch of s) if (SIMPLIFIED_CHARS.has(ch)) return true;
+  return false;
+}
+
+/**
+ * 訪客身分用的 IP 正規化：IPv4 維持完整位址；IPv6 只取前 64 位元（前 4 組 hextet，展開 :: 後以固定格式輸出），
+ * 因為同一個 /64 網段內的位址都屬於同一個用戶，否則每個位址都算新訪客。IPv4-mapped IPv6 視為 IPv4。無法解析就原樣（小寫）回傳。
+ */
+export function normalizeIpIdentity(ip: string): string {
+  let s = ip.trim().toLowerCase().replace(/%.*$/, "");
+  if (!s.includes(":")) return s;
+  const m4 = s.match(/^(.*:)(\d{1,3}(?:\.\d{1,3}){3})$/);
+  if (m4) {
+    const parts = m4[2].split(".").map(Number);
+    if (parts.some((x) => x > 255)) return s;
+    if (/^(::|0:0:0:0:0:)ffff:$/.test(m4[1])) return m4[2];
+    const hex = (a: number, b: number) => ((a << 8) | b).toString(16);
+    s = m4[1] + hex(parts[0], parts[1]) + ":" + hex(parts[2], parts[3]);
+  }
+  const halves = s.split("::");
+  if (halves.length > 2) return s;
+  const head = halves[0] ? halves[0].split(":") : [];
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(":") : [];
+  let groups: string[];
+  if (halves.length === 2) {
+    const fill = 8 - head.length - tail.length;
+    if (fill < 1) return s;
+    groups = [...head, ...Array<string>(fill).fill("0"), ...tail];
+  } else {
+    groups = head;
+  }
+  if (groups.length !== 8 || groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return s;
+  return groups
+    .slice(0, 4)
+    .map((g) => parseInt(g, 16).toString(16))
+    .join(":") + "::/64";
 }
 
 function hasBadWord(s: string): boolean {
@@ -95,6 +137,7 @@ export function validateStoryRequest(body: unknown): ValidateResult {
       const len = [...v].length;
       if (len < 1) return bad(`第 ${i + 1} 題「${q.label}」還沒有填，請寫 1 到 ${TEXT_MAX} 個字。`);
       if (len > TEXT_MAX) return bad(`第 ${i + 1} 題「${q.label}」太長了（${len} 字），請縮短到 ${TEXT_MAX} 個字以內。`);
+      if (hasSimplified(v)) return bad(`第 ${i + 1} 題「${q.label}」請用繁體中文輸入。`);
       if (URL_PATTERN.test(v)) return bad(`第 ${i + 1} 題「${q.label}」請不要填網址，換成一般的文字就好。`);
       if (hasBadWord(v)) return bad(`第 ${i + 1} 題「${q.label}」含有不適合的字詞，請換個說法。`);
       answers.push({ question: q, value: v });
@@ -108,6 +151,20 @@ export function validateStoryRequest(body: unknown): ValidateResult {
 export const STORY_MAX_LENGTH = 150;
 
 const FORBIDDEN_PHRASES = ["必中", "保證", "穩贏", "破解", "明牌"];
+
+// 輸出端另外擋的假冒官方、導流、宣稱中獎、匯款詞（比對前轉小寫並去空白）
+const OUTPUT_BLOCKED = ["官方", "公告", "加賴", "加line", "lineid", "已中獎", "恭喜中獎", "中獎了", "頭獎得主", "匯款", "轉帳"];
+
+/** 6 個字元以上的英數帳號樣式：同時含英文與數字，或英文夾底線、點（單純英文字或數字不算） */
+function hasAccountLike(text: string): boolean {
+  for (const m of text.matchAll(/[A-Za-z0-9_.]{6,}/g)) {
+    const tok = m[0].replace(/^[_.]+|[_.]+$/g, "");
+    if (tok.length < 6) continue;
+    const hasLetter = /[A-Za-z]/.test(tok);
+    if (hasLetter && (/\d/.test(tok) || /[_.]/.test(tok))) return true;
+  }
+  return false;
+}
 
 // 常見簡體專用字（繁體寫法不同的字）。命中任一個就視為簡體輸出。
 const SIMPLIFIED_CHARS = new Set(
@@ -147,5 +204,13 @@ export function checkStoryOutput(text: string, numbers: number[], second?: numbe
     if (SIMPLIFIED_CHARS.has(ch)) return { ok: false, reason: `含有簡體字「${ch}」` };
   }
   if (t.includes("—")) return { ok: false, reason: "含有破折號" };
+  if (hasBadWord(t)) return { ok: false, reason: "含有不適合的字詞" };
+  if (URL_PATTERN.test(t)) return { ok: false, reason: "含有網址" };
+  const squeezed = t.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
+  for (const w of OUTPUT_BLOCKED) {
+    if (squeezed.includes(w)) return { ok: false, reason: "含有不可使用的詞" };
+  }
+  if (/\d{8,}/.test(squeezed)) return { ok: false, reason: "含有連續 8 碼以上的數字" };
+  if (hasAccountLike(t.normalize("NFKC"))) return { ok: false, reason: "含有帳號樣式的文字" };
   return { ok: true };
 }

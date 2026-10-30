@@ -255,6 +255,14 @@ export const countersRepo = {
     );
     return countersRepo.get(key);
   },
+  /** 原子遞增並回傳新值（單一 SQL，D1 與 node:sqlite 都支援 RETURNING），用於「先預扣再判斷」避免併發繞過上限 */
+  async incrementAndGet(key: string): Promise<number> {
+    const row = await getDb().get<{ value: number }>(
+      "INSERT INTO counters (key, value) VALUES (?, 1) ON CONFLICT(key) DO UPDATE SET value = value + 1 RETURNING value",
+      [key]
+    );
+    return row?.value ?? 1;
+  },
   async set(key: string, value: number): Promise<void> {
     await getDb().run(
       "INSERT INTO counters (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
@@ -282,5 +290,9 @@ export const storyUsageRepo = {
   },
   async increment(day: string, who: string): Promise<void> {
     await countersRepo.increment(`story:${day}:${who}`);
+  },
+  /** 預扣一次並回傳扣完後的累計次數 */
+  async incrementAndGet(day: string, who: string): Promise<number> {
+    return countersRepo.incrementAndGet(`story:${day}:${who}`);
   },
 };

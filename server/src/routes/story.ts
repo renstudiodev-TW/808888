@@ -4,7 +4,7 @@ import { readSession, isAdminUser } from "../auth.js";
 import { config } from "../config.js";
 import { storyUsageRepo } from "../repos.js";
 import { computeStoryNumbers } from "../../../lib/story/numbers.js";
-import { validateStoryRequest, checkStoryOutput, STORY_MAX_LENGTH } from "../../../lib/story/validate.js";
+import { validateStoryRequest, checkStoryOutput, normalizeIpIdentity, STORY_MAX_LENGTH } from "../../../lib/story/validate.js";
 import { buildTemplateStory } from "../../../lib/story/templates.js";
 import { STORY_GAMES } from "../../../lib/story/games.js";
 import type { PickedNumber, StoryErrorCode, StoryResult } from "../../../lib/story/types.js";
@@ -18,6 +18,10 @@ interface StoryEnv {
 export const storyApi = new Hono<{ Bindings: StoryEnv }>();
 
 const DEFAULT_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
+/** 站長可覆寫的模型白名單（再加上 env 的 STORY_AI_MODEL） */
+export const ALLOWED_MODELS: string[] = [DEFAULT_MODEL];
+const OVERRIDE_DAILY_CAP = 50;
+const ALLOWED_ORIGINS = ["https://808888.tw", "https://lottery808888.ren-studio-dev.workers.dev"];
 const GUEST_LIMIT = 3;
 const MEMBER_LIMIT = 10;
 const DEFAULT_CAP = 1000;
@@ -137,6 +141,15 @@ async function generateAiStory(
 
 storyApi.post("/api/story", async (c) => {
   try {
+    // 擋跨站請求借訪客瀏覽器消耗額度：只收 JSON，且有 Origin 時必須是自家網域（沒有 Origin 如 curl 照常，次數限制會擋）
+    if (!/^application\/json\s*(;|$)/i.test(c.req.header("Content-Type") ?? "")) {
+      return c.json(err("bad_request", "請求格式不正確，請重新整理頁面再試一次。"), 415);
+    }
+    const origin = c.req.header("Origin");
+    if (origin !== undefined && !ALLOWED_ORIGINS.includes(origin)) {
+      return c.json(err("bad_request", "不允許的請求來源。"), 403);
+    }
+
     let body: unknown;
     try {
       body = await c.req.json();
@@ -159,30 +172,38 @@ storyApi.post("/api/story", async (c) => {
       who = `${isMember ? "m" : "a"}:${session.sub}`;
     } else {
       const ip = c.req.header("CF-Connecting-IP") ?? "unknown";
-      who = `ip:${(await sha256Hex(ip + config.sessionSecret)).slice(0, 16)}`;
+      who = `ip:${(await sha256Hex(normalizeIpIdentity(ip) + config.sessionSecret)).slice(0, 16)}`;
     }
     const limit = session ? MEMBER_LIMIT : GUEST_LIMIT;
 
-    // 站長可指定模型比較效果：不扣次數、不受次數限制。其他人帶 model 一律忽略。
+    // 站長可指定模型比較效果：只收白名單內的模型，且每日最多 50 次（原子預扣），超過就忽略覆寫走一般流程。
     const requestedModel = (body as { model?: unknown }).model;
-    const modelOverride = isAdmin && typeof requestedModel === "string" && /^@cf\/[\w.\-/]+$/.test(requestedModel) ? requestedModel : undefined;
+    const allowedModels = c.env.STORY_AI_MODEL ? [...ALLOWED_MODELS, c.env.STORY_AI_MODEL] : ALLOWED_MODELS;
+    let modelOverride: string | undefined;
+    if (isAdmin && typeof requestedModel === "string" && allowedModels.includes(requestedModel)) {
+      const n = await storyUsageRepo.incrementAndGet(date, "override");
+      if (n <= OVERRIDE_DAILY_CAP) modelOverride = requestedModel;
+    }
     const model = modelOverride ?? c.env.STORY_AI_MODEL ?? DEFAULT_MODEL;
 
     const cap = Number(c.env.STORY_DAILY_CAP) > 0 ? Number(c.env.STORY_DAILY_CAP) : DEFAULT_CAP;
-    const used = await storyUsageRepo.get(date, who);
-    const allUsed = await storyUsageRepo.get(date, ALL_KEY);
-    const hasQuota = used < limit && allUsed < cap;
+
+    // 呼叫 AI 之前先原子預扣：一次涵蓋本請求所有 AI 嘗試（含重試），AI 失敗或逾時也不退還（失敗的呼叫一樣花費）。
+    // 超過的人每次請求仍會 +1，只是計數，不影響結果。
+    let remaining = limit;
+    let hasQuota = false;
+    if (!modelOverride) {
+      const used = await storyUsageRepo.incrementAndGet(date, who);
+      remaining = Math.max(0, limit - used);
+      if (used <= limit) {
+        const allUsed = await storyUsageRepo.incrementAndGet(date, ALL_KEY);
+        hasQuota = allUsed <= cap;
+      }
+    }
 
     let story: string | null = null;
     if (c.env.AI && (modelOverride || hasQuota)) {
       story = await generateAiStory(c.env.AI, model, STORY_GAMES[v.game].name, numbers, second);
-    }
-
-    let remaining = Math.max(0, limit - used);
-    if (story !== null && !modelOverride) {
-      await storyUsageRepo.increment(date, who);
-      await storyUsageRepo.increment(date, ALL_KEY);
-      remaining = Math.max(0, limit - used - 1);
     }
 
     const result: StoryResult = {
