@@ -88,7 +88,8 @@ async function generateAiStory(
   model: string,
   game: string,
   numbers: PickedNumber[],
-  second: PickedNumber | undefined
+  second: PickedNumber | undefined,
+  trace?: string[] // 暫時診斷用：記錄每次失敗原因（不含用戶答案）
 ): Promise<string | null> {
   const deadline = Date.now() + AI_TOTAL_TIMEOUT_MS;
   const nums = numbers.map((x) => x.n);
@@ -114,9 +115,11 @@ async function generateAiStory(
       const check = checkStoryOutput(text, nums, second?.n);
       if (check.ok) return text.trim();
       hint = check.reason;
+      trace?.push(`check:${check.reason}|${text.slice(0, 200)}`);
     } catch (e) {
       // 只記錯誤訊息，不記用戶答案
       console.error("[story] AI 呼叫失敗：", e instanceof Error ? e.message : String(e));
+      trace?.push(`error:${e instanceof Error ? e.message : String(e)}`.slice(0, 300));
       hint = undefined;
     }
   }
@@ -164,8 +167,10 @@ storyApi.post("/api/story", async (c) => {
     const hasQuota = used < limit && allUsed < cap;
 
     let story: string | null = null;
+    const trace: string[] | undefined = (body as { debug?: unknown }).debug === true ? [] : undefined;
+    if (!c.env.AI) trace?.push("no_ai_binding");
     if (c.env.AI && (modelOverride || hasQuota)) {
-      story = await generateAiStory(c.env.AI, model, STORY_GAMES[v.game].name, numbers, second);
+      story = await generateAiStory(c.env.AI, model, STORY_GAMES[v.game].name, numbers, second, trace);
     }
 
     let remaining = Math.max(0, limit - used);
@@ -184,7 +189,7 @@ storyApi.post("/api/story", async (c) => {
       storySource: story !== null ? "ai" : "template",
       remaining,
     };
-    return c.json(result);
+    return c.json(trace ? { ...result, debug: { model, trace } } : result);
   } catch (e) {
     console.error("[story] 未預期錯誤：", e instanceof Error ? e.message : String(e));
     return c.json(err("server_error", "故事產生遇到一點問題，請稍後再試一次。"), 500);
