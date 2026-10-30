@@ -1,7 +1,7 @@
 // 用原生 Canvas 畫 1080x1350 分享圖並下載，不依賴任何套件。
 import { STORY_GAMES } from "@/lib/story/games";
 import type { StoryResult } from "@/lib/story/types";
-import { allPickedNumbers, pad2, splitStory } from "./highlight";
+import { allPickedNumbers, splitStory } from "./highlight";
 
 const W = 1080;
 const H = 1350;
@@ -48,25 +48,43 @@ function drawBall(ctx: CanvasRenderingContext2D, cx: number, cy: number, rad: nu
   ctx.font = `700 ${Math.round(rad * 0.82)}px ${font}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(pad2(n), cx, cy + 2);
+  ctx.fillText(String(n), cx, cy + 2);
 }
 
-/** 依寬度把字串切成最多 maxLines 行（逐字） */
-function wrapChars(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
+// 避頭點：不可出現在行首的標點；避尾點：不可出現在行尾的開頭標點
+const NO_START = new Set(Array.from("、，。！？；：」』）》】,.!?;:)%"));
+const NO_END = new Set(Array.from("「『（《【("));
+
+/** 出處文字的最小斷行單位：英數連續算一個字，中文逐字，空白獨立 */
+function tokens(text: string): string[] {
+  return text.match(/[A-Za-z0-9%]+|\s|[^\s]/gu) ?? [];
+}
+
+/** 依寬度把出處切成最多 maxLines 行；放不下時在完整的字上截斷並加「…」 */
+function wrapSource(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
   const lines: string[] = [];
   let cur = "";
-  for (const ch of Array.from(text)) {
-    if (ctx.measureText(cur + ch).width > maxWidth && cur) {
-      lines.push(cur);
-      cur = ch;
-    } else cur += ch;
+  const toks = tokens(text);
+  let i = 0;
+  for (; i < toks.length; i++) {
+    const t = toks[i];
+    if (!cur && /^\s$/.test(t)) continue; // 行首不放空白
+    if (ctx.measureText(cur + t).width > maxWidth && cur) {
+      lines.push(cur.trimEnd());
+      if (lines.length === maxLines) break;
+      cur = /^\s$/.test(t) ? "" : t;
+    } else cur += t;
   }
-  if (cur) lines.push(cur);
-  if (lines.length > maxLines) {
-    const cut = lines.slice(0, maxLines);
-    cut[maxLines - 1] = cut[maxLines - 1].slice(0, -1) + "…";
-    return cut;
+  if (lines.length < maxLines) {
+    if (cur.trim()) lines.push(cur.trimEnd());
+    return lines;
   }
+  // 還有剩字：最後一行用完整的字截斷並補「…」
+  let tail = lines[maxLines - 1];
+  const tt = tokens(tail);
+  while (tt.length && ctx.measureText(tt.join("") + "…").width > maxWidth) tt.pop();
+  tail = tt.join("").trimEnd() + "…";
+  lines[maxLines - 1] = tail;
   return lines;
 }
 
@@ -110,7 +128,7 @@ export async function downloadShareImage(r: StoryResult): Promise<void> {
   ctx.font = `500 30px ${family}`;
   ctx.fillText(`${STORY_GAMES[r.game].name}　${r.date}`, W / 2, 196);
 
-  // 故事：自動換行，號碼用金色標出
+  // 故事：自動換行（含避頭尾點），號碼用金色標出
   const units = toUnits(r);
   const left = 90;
   const maxW = W - left * 2;
@@ -118,15 +136,25 @@ export async function downloadShareImage(r: StoryResult): Promise<void> {
   let lines: Unit[][] = [];
   for (;;) {
     ctx.font = `500 ${fontSize}px ${family}`;
+    const wOf = (u: Unit) => ctx.measureText(u.text).width;
     lines = [];
     let line: Unit[] = [];
     let w = 0;
     for (const u of units) {
-      const uw = ctx.measureText(u.text).width;
+      const uw = wOf(u);
       if (w + uw > maxW && line.length) {
+        if (NO_START.has(u.text) && w + uw <= maxW + fontSize * 0.6) {
+          // 標點擠在上一行行尾
+          line.push(u);
+          w += uw;
+          continue;
+        }
+        const carry: Unit[] = [];
+        if (NO_START.has(u.text) && line.length > 1) carry.push(line.pop()!); // 前一個字一起帶下去
+        while (line.length > 1 && NO_END.has(line[line.length - 1].text)) carry.unshift(line.pop()!);
         lines.push(line);
-        line = [];
-        w = 0;
+        line = carry;
+        w = carry.reduce((sum, c) => sum + wOf(c), 0);
       }
       line.push(u);
       w += uw;
@@ -136,8 +164,34 @@ export async function downloadShareImage(r: StoryResult): Promise<void> {
     fontSize -= 2;
   }
   const lh = fontSize * 1.6;
+
+  // 號碼球尺寸與出處（最多兩行）
+  const balls = [
+    ...r.numbers.map((x) => ({ ...x, special: false })),
+    ...(r.second ? [{ ...r.second, special: true }] : []),
+  ];
+  const slot = Math.min(140, (W - 100) / balls.length);
+  const rad = Math.min(54, slot * 0.4);
+  const capSize = balls.length > 6 ? 20 : 22;
+  ctx.font = `500 ${capSize}px ${family}`;
+  const captions = balls.map((b) =>
+    b.special ? ["第二區", ...wrapSource(ctx, b.source, slot - 6, 2)] : wrapSource(ctx, b.source, slot - 6, 2),
+  );
+  const capLines = Math.max(...captions.map((c) => c.length));
+  const capLh = capSize + 6;
+  const ballBlockH = rad * 2 + 20 + capLines * capLh;
+
+  // 整塊內容（故事 + 號碼球）在標題與頁尾之間垂直置中
+  const GAP = 70;
+  const storyH = lines.length * lh;
+  const regionTop = 250;
+  const regionBottom = 1130;
+  const total = storyH + GAP + ballBlockH;
+  const top = regionTop + Math.max(0, (regionBottom - regionTop - total) / 2);
+
   ctx.textAlign = "left";
-  let y = 290;
+  ctx.textBaseline = "alphabetic";
+  let y = top + fontSize;
   for (const line of lines) {
     let x = left;
     for (const u of line) {
@@ -150,23 +204,16 @@ export async function downloadShareImage(r: StoryResult): Promise<void> {
   }
 
   // 號碼球
-  const balls = [
-    ...r.numbers.map((x) => ({ ...x, special: false })),
-    ...(r.second ? [{ ...r.second, special: true }] : []),
-  ];
-  const slot = Math.min(140, (W - 120) / balls.length);
-  const rad = Math.min(54, slot * 0.4);
   const startX = (W - slot * balls.length) / 2 + slot / 2;
-  const ballY = 940;
+  const ballY = top + storyH + GAP + rad;
   balls.forEach((b, i) => {
     const cx = startX + i * slot;
     drawBall(ctx, cx, ballY, rad, b.n, b.special, family);
-    ctx.font = `500 22px ${family}`;
+    ctx.font = `500 ${capSize}px ${family}`;
     ctx.fillStyle = MUTED;
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
-    const caption = b.special ? [`第二區`, ...wrapChars(ctx, b.source, slot - 8, 1)] : wrapChars(ctx, b.source, slot - 8, 2);
-    caption.forEach((t, k) => ctx.fillText(t, cx, ballY + rad + 38 + k * 28));
+    captions[i].forEach((t, k) => ctx.fillText(t, cx, ballY + rad + 32 + k * capLh));
   });
 
   // 頁尾
