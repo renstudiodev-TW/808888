@@ -274,14 +274,13 @@ export const settingsRepo = {
 };
 
 // 故事抓牌每日 AI 使用次數（who：會員 "m:<id>"、訪客 "ip:<雜湊>"、全站 "__all__"）。不存用戶答案。
+// 故事抓牌每日 AI 使用次數，借用既有 counters 表（key = story:<日期>:<身分>），不必另跑 D1 migration。
+// 身分 who = "m:<會員id>"、"a:<站長>" 或 "ip:<雜湊前 16 碼>"，全站合計用 "__all__"。刻意不存用戶填的答案內容。
 export const storyUsageRepo = {
   async get(day: string, who: string): Promise<number> {
-    return (await getDb().get<{ count: number }>("SELECT count FROM story_usage WHERE day = ? AND who = ?", [day, who]))?.count ?? 0;
+    return countersRepo.get(`story:${day}:${who}`);
   },
   async increment(day: string, who: string): Promise<void> {
-    await getDb().run(
-      "INSERT INTO story_usage (day, who, count) VALUES (?, ?, 1) ON CONFLICT(day, who) DO UPDATE SET count = count + 1",
-      [day, who]
-    );
+    await countersRepo.increment(`story:${day}:${who}`);
   },
 };
