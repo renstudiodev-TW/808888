@@ -5,6 +5,7 @@ import { D1Db, type D1Database } from "./db/d1.js";
 import { admin } from "./routes/admin.js";
 import { member } from "./routes/member.js";
 import { publicApi } from "./routes/public.js";
+import { storyApi } from "./routes/story.js";
 import { readSession } from "./auth.js";
 import { runDailyReport, gamesForToday } from "./reports.js";
 import { lineConfigured, lineMessagingConfigured, ecpayConfigured } from "./config.js";
@@ -25,6 +26,9 @@ export interface Env {
   NEWEBPAY_HASH_IV?: string;
   GH_PAT?: string; // GitHub PAT（Actions:write），給 Cron 觸發每日資料重建用
   GH_REPO?: string; // owner/repo，預設 renstudiodev-TW/808888
+  AI?: { run(model: string, input: unknown): Promise<unknown> }; // Workers AI binding（故事抓牌）
+  STORY_DAILY_CAP?: string; // 全站每日 AI 故事上限，預設 1000
+  STORY_AI_MODEL?: string; // 故事用模型 ID
 }
 
 // 由 Cloudflare Cron 可靠觸發 GitHub 的每日資料更新 workflow（比 GitHub 自身排程穩）。
@@ -71,6 +75,7 @@ app.get("/health", (c) => c.json({
 
 app.route("/admin", admin);
 app.route("/", publicApi); // /api/draws /api/news（公開）
+app.route("/", storyApi); // /api/story（故事抓牌）
 app.route("/", member); // /auth/* /api/*
 
 // 其餘交給靜態前台（Next.js 靜態輸出）

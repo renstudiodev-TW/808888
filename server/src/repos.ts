@@ -272,3 +272,16 @@ export const settingsRepo = {
     await countersRepo.set("push_disabled", on ? 0 : 1);
   },
 };
+
+// 故事抓牌每日 AI 使用次數（who：會員 "m:<id>"、訪客 "ip:<雜湊>"、全站 "__all__"）。不存用戶答案。
+export const storyUsageRepo = {
+  async get(day: string, who: string): Promise<number> {
+    return (await getDb().get<{ count: number }>("SELECT count FROM story_usage WHERE day = ? AND who = ?", [day, who]))?.count ?? 0;
+  },
+  async increment(day: string, who: string): Promise<void> {
+    await getDb().run(
+      "INSERT INTO story_usage (day, who, count) VALUES (?, ?, 1) ON CONFLICT(day, who) DO UPDATE SET count = count + 1",
+      [day, who]
+    );
+  },
+};

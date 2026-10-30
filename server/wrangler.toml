@@ -39,6 +39,10 @@ migrations_dir = "migrations"
 [triggers]
 crons = ["0 15 * * *", "0 1 * * *"]
 
+# Workers AI（故事抓牌用）
+[ai]
+binding = "AI"
+
 # 非機密變數（機密用 `wrangler secret put`）
 [vars]
 BASE_URL = "https://808888.tw"
@@ -46,3 +50,6 @@ LINE_CALLBACK_URL = "https://808888.tw/auth/line/callback"
 GH_REPO = "renstudiodev-TW/808888"
 # 藍新金流正式環境（測試站為 https://ccore.newebpay.com/MPG/period）
 NEWEBPAY_API_URL = "https://core.newebpay.com/MPG/period"
+# 故事抓牌：全站每日 AI 故事上限，與使用的模型（站長可在 request 帶 model 覆蓋測試）
+STORY_DAILY_CAP = "1000"
+STORY_AI_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8"
