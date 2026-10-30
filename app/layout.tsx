@@ -81,15 +81,14 @@ function Header() {
               style={{ marginTop: "-4%" }}
             />
           </span>
-          <span className="whitespace-nowrap font-display text-lg font-extrabold tracking-wide text-gradient sm:text-2xl">808888.tw</span>
+          <span className="hidden whitespace-nowrap font-display text-lg font-extrabold tracking-wide text-gradient sm:inline sm:text-2xl">808888.tw</span>
           <span className="ml-1 hidden rounded-full border border-[rgba(255,42,95,0.5)] bg-[rgba(255,42,95,0.12)] px-3 py-1 text-base font-extrabold text-[var(--hot)] shadow-[0_0_16px_rgba(255,42,95,0.35)] lg:inline">
             幫您發發發發
           </span>
         </Link>
-        <nav className="flex shrink-0 items-center gap-2 text-sm sm:gap-4">
-          <Link href="/games/daily539" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">今彩539</Link>
-          <Link href="/games/lotto649" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">大樂透</Link>
-          <Link href="/games/superLotto638" className="hidden px-2 py-1 text-[var(--muted)] hover:text-[var(--neon)] sm:inline">威力彩</Link>
+        <nav className="flex shrink-0 items-center gap-1 text-sm sm:gap-4">
+          <Link href="/" className="whitespace-nowrap px-1.5 py-1 text-[13px] font-semibold text-[var(--text)] hover:text-[var(--neon)] sm:px-2 sm:text-sm">故事抓牌</Link>
+          <Link href="/analysis" className="whitespace-nowrap px-1.5 py-1 text-[13px] text-[var(--muted)] hover:text-[var(--neon)] sm:px-2 sm:text-sm">數據分析</Link>
           <Link href="/pricing" className="btn-primary shrink-0 whitespace-nowrap !px-3 !py-1.5 text-sm sm:!px-4">訂閱方案</Link>
           <AuthNav />
         </nav>
