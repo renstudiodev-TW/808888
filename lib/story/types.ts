@@ -9,6 +9,7 @@ export interface Question {
   id: string; // 穩定代號，例如 "battery"；Worker 依此回查題庫，不信任前端傳來的題目文字
   kind: QuestionKind;
   label: string; // 題目文字，例如「手機電量剩幾 %？」
+  short: string; // 出處簡稱（名詞），組成「手機電量 41%」「午餐 排骨便當」給號碼出處與故事用
   placeholder?: string;
   options?: string[]; // kind = "choice" 才有
   min?: number; // kind = "number" 的合理輸入範圍

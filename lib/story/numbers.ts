@@ -16,14 +16,6 @@ export interface StoryNumbers {
 
 const FILL_SOURCE = "綜合你的答案推算";
 
-// 已知題目的簡短名稱，用來組出處文字。題庫新增題目時可在 Question 加選填的 short 欄位，沒有就退回題目文字。
-const SHORT_NAMES: Record<string, string> = {
-  battery: "手機電量",
-  age: "年齡",
-  zodiacSign: "星座",
-  firstSight: "出門看到",
-};
-
 /** cyrb53：字串轉 53 位元雜湊（整數），可帶種子 */
 export function cyrb53(str: string, seed = 0): number {
   let h1 = 0xdeadbeef ^ seed;
@@ -61,8 +53,7 @@ function wrapToPool(n: number, pool: number): number {
 }
 
 function shortName(q: Question): string {
-  const custom = (q as Question & { short?: string }).short;
-  return custom || SHORT_NAMES[q.id] || q.label.replace(/[？?：:\s]+$/u, "");
+  return q.short || q.label.replace(/[？?：:\s]+$/u, "");
 }
 
 function sourceOf(q: Question, value: string): string {
