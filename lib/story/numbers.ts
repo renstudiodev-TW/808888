@@ -56,9 +56,15 @@ function shortName(q: Question): string {
   return q.short || q.label.replace(/[？?：:\s]+$/u, "");
 }
 
+/** 中文單位前面補空格（12 則），% 這類符號直接黏著 */
+function unitSuffix(unit?: string): string {
+  if (!unit) return "";
+  return /^[一-鿿]/.test(unit) ? ` ${unit}` : unit;
+}
+
 function sourceOf(q: Question, value: string): string {
   const name = shortName(q);
-  return q.kind === "number" ? `${name} ${value}${q.unit ?? ""}` : `${name} ${value}`;
+  return q.kind === "number" ? `${name} ${value}${unitSuffix(q.unit)}` : `${name} ${value}`;
 }
 
 /** 單題答案換算成 1～pool 的候選號碼（尚未處理撞號） */

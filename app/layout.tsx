@@ -69,8 +69,8 @@ export const viewport: Viewport = {
 function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[rgba(8,11,16,0.8)] backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
-        <Link href="/" className="flex min-w-0 shrink items-center gap-2">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:px-5">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
           <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-[rgba(0,240,255,0.3)]">
             <Image
               src={`${basePath}/caishen.webp`}
@@ -86,10 +86,10 @@ function Header() {
             幫您發發發發
           </span>
         </Link>
-        <nav className="flex shrink-0 items-center gap-1 text-sm sm:gap-4">
-          <Link href="/" className="whitespace-nowrap px-1.5 py-1 text-[13px] font-semibold text-[var(--text)] hover:text-[var(--neon)] sm:px-2 sm:text-sm">故事抓牌</Link>
-          <Link href="/analysis" className="whitespace-nowrap px-1.5 py-1 text-[13px] text-[var(--muted)] hover:text-[var(--neon)] sm:px-2 sm:text-sm">數據分析</Link>
-          <Link href="/pricing" className="btn-primary shrink-0 whitespace-nowrap !px-3 !py-1.5 text-sm sm:!px-4">訂閱方案</Link>
+        <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto text-sm sm:gap-4 sm:overflow-visible">
+          <Link href="/" className="whitespace-nowrap px-1 py-1 text-[13px] font-semibold text-[var(--text)] hover:text-[var(--neon)] sm:px-2 sm:text-sm">故事抓牌</Link>
+          <Link href="/analysis" className="whitespace-nowrap px-1 py-1 text-[13px] text-[var(--muted)] hover:text-[var(--neon)] sm:px-2 sm:text-sm">數據分析</Link>
+          <Link href="/pricing" className="btn-primary shrink-0 whitespace-nowrap !px-2.5 !py-1.5 text-[13px] sm:!px-4 sm:text-sm"><span className="sm:hidden">訂閱</span><span className="hidden sm:inline">訂閱方案</span></Link>
           <AuthNav />
         </nav>
       </div>

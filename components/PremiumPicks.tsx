@@ -81,7 +81,7 @@ export function PremiumPicks({
         ))}
       </div>
       <p className="mt-4 text-[11px] leading-relaxed text-[var(--muted)]">
-        ※ 分數為相對綜合評分（0–100），僅供號碼間比較參考，<strong className="text-[var(--text)]">不是中獎機率</strong>。
+        ※ 分數為相對綜合評分（0 到 100），僅供號碼間比較參考，<strong className="text-[var(--text)]">不是中獎機率</strong>。
       </p>
     </div>
   );

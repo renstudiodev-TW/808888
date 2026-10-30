@@ -5,14 +5,14 @@ import { STORY_GAMES } from "@/lib/story/games";
 import type { StoryResult } from "@/lib/story/types";
 import { NumberBall } from "@/components/NumberBall";
 import { Confetti } from "@/components/Confetti";
-import { allPickedNumbers, pad2, splitStory } from "./highlight";
+import { allPickedNumbers, splitStory } from "./highlight";
 import { downloadShareImage } from "./shareImage";
 
 const SITE_URL = "https://808888.tw";
 
 function buildShareText(r: StoryResult): string {
-  const nums = r.numbers.map((x) => pad2(x.n)).join(" ");
-  const second = r.second ? `\n第二區：${pad2(r.second.n)}` : "";
+  const nums = r.numbers.map((x) => x.n).join(" ");
+  const second = r.second ? `\n第二區：${r.second.n}` : "";
   return `${r.story}\n\n我的${STORY_GAMES[r.game].name}故事號碼：${nums}${second}\n\n你也來抓一組：${SITE_URL}`;
 }
 
@@ -84,7 +84,7 @@ export function StoryResultCard({
         <div className="mt-6 flex flex-wrap items-start justify-center gap-x-2 gap-y-4">
           {result.numbers.map((x) => (
             <div key={x.n} className="flex w-[4.5rem] flex-col items-center gap-1">
-              <NumberBall n={x.n} size="lg" tone="hot" />
+              <NumberBall n={String(x.n)} size="lg" tone="hot" />
               <span className="text-center text-[11px] leading-tight break-words text-[var(--muted)]">{x.source}</span>
             </div>
           ))}
@@ -92,7 +92,7 @@ export function StoryResultCard({
             <>
               <div className="hidden self-stretch border-l border-dashed border-[var(--border)] sm:block" aria-hidden />
               <div className="flex w-[4.5rem] flex-col items-center gap-1">
-                <NumberBall n={result.second.n} size="lg" tone="special" />
+                <NumberBall n={String(result.second.n)} size="lg" tone="special" />
                 <span className="text-[11px] font-bold text-[var(--primary)]">第二區</span>
                 <span className="text-center text-[11px] leading-tight break-words text-[var(--muted)]">
                   {result.second.source}

@@ -30,7 +30,7 @@ export function AuthNav() {
     return (
       <a
         href="/auth/line/login"
-        className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#06C755] px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110 sm:px-4"
+        className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#06C755] px-2.5 py-1.5 text-[13px] font-bold text-white transition hover:brightness-110 sm:px-4 sm:text-sm"
       >
         <span className="font-black">LINE</span> 登入
       </a>
