@@ -116,6 +116,7 @@ async function generateAiStory(
       if (check.ok) return text.trim();
       hint = check.reason;
       trace?.push(`check:${check.reason}|${text.slice(0, 200)}`);
+      if (!text) trace?.push(`raw:${JSON.stringify(res).slice(0, 1200)}`);
     } catch (e) {
       // 只記錯誤訊息，不記用戶答案
       console.error("[story] AI 呼叫失敗：", e instanceof Error ? e.message : String(e));
