@@ -1,3 +1,10 @@
+# 808888.tw（已封存）
+
+2026-11 起樂透抓牌服務停止，正式站只顯示一頁停止服務說明（`server/src/archive.ts`）。
+完整功能的最後版本在 git tag `final-live`，程式與素材都保留在這個 repo。網域 808888.tw 保留，之後另做他用。
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

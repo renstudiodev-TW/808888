@@ -1,55 +1,21 @@
-# Cloudflare Workers 一站式部署設定（808888）。網域 808888.tw（CloudMax 註冊，NS 指向 Cloudflare）。
-# 部署前置（RC 有 Cloudflare 帳號後，我帶著做）：
-#   1. wrangler login
-#   2. wrangler d1 create lottery808888   → 把回傳的 database_id 填到下面
-#   3. wrangler d1 migrations apply lottery808888 --remote   → 建表
-#   4. 前台用「無 basePath」重建：在專案根 `next build`（不要帶 NEXT_PUBLIC_BASE_PATH），產生 out/
-#   5. 設密鑰：wrangler secret put ADMIN_PASSWORD / SESSION_SECRET / LINE_* / NEWEBPAY_*
-#   6. wrangler deploy
-#   7. 在 Cloudflare 後台把 808888.tw 綁到這個 Worker（custom domain）
+# 2026-11 起封存模式：只部署 src/archive.ts（一頁停止服務說明），金流、登入、AI、排程全部停用。
+# 完整功能版本在 git tag `final-live`（入口 src/worker.ts）。要復活時從那個 tag 的 wrangler.toml 還原。
+# D1 資料庫 lottery808888 保留不刪（含 LINE 登入會員資料）。
 
 name = "lottery808888"
-main = "src/worker.ts"
+main = "src/archive.ts"
 account_id = "00803e27ecda191573a05f2e02ea7799"
 compatibility_date = "2025-09-01"
-compatibility_flags = ["nodejs_compat"]
 
-# 綁定自訂網域（apex）到此 Worker：HTTPS 由 Cloudflare 自動簽發。
 routes = [
   { pattern = "808888.tw", custom_domain = true }
 ]
-# 保留 workers.dev 網址當備援
 workers_dev = true
 
-# 靜態前台（Next.js 靜態輸出，根路徑版）
+# 只放圖示檔
 [assets]
-directory = "../out"
-binding = "ASSETS"
+directory = "./archive-assets"
 
-# D1 資料庫（database_id 由 `wrangler d1 create` 後填入）
-[[d1_databases]]
-binding = "DB"
-database_name = "lottery808888"
-database_id = "301abaf2-a599-4c94-9bad-8f3c20a8f1ef"
-migrations_dir = "migrations"
-
-# 每日 Cron（Cloudflare 觸發，比 GitHub 排程可靠）
-#   15:00 UTC = 23:00 台灣 → 開獎後觸發 GitHub 重建分析資料
-#   01:00 UTC = 09:00 台灣 → 推播今彩539精選給付費會員
+# 清空排程（不寫這段，舊的 Cron 會留在 Cloudflare 上）
 [triggers]
-crons = ["0 15 * * *", "0 1 * * *"]
-
-# Workers AI（故事抓牌用）
-[ai]
-binding = "AI"
-
-# 非機密變數（機密用 `wrangler secret put`）
-[vars]
-BASE_URL = "https://808888.tw"
-LINE_CALLBACK_URL = "https://808888.tw/auth/line/callback"
-GH_REPO = "renstudiodev-TW/808888"
-# 藍新金流正式環境（測試站為 https://ccore.newebpay.com/MPG/period）
-NEWEBPAY_API_URL = "https://core.newebpay.com/MPG/period"
-# 故事抓牌：全站每日 AI 故事上限，與使用的模型（站長可在 request 帶 model 覆蓋測試）
-STORY_DAILY_CAP = "1000"
-STORY_AI_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8"
+crons = []

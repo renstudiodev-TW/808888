@@ -1,0 +1,38 @@
+name: Archive deploy
+
+# 2026-11 封存：原本的每日資料更新已停用，只留手動觸發，用來部署封存頁並清掉不再使用的密鑰。
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install server deps
+        working-directory: server
+        run: npm ci
+
+      - name: Deploy archive worker
+        working-directory: server
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Remove unused secrets (payment, GitHub PAT)
+        working-directory: server
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          for k in NEWEBPAY_MERCHANT_ID NEWEBPAY_HASH_KEY NEWEBPAY_HASH_IV GH_PAT; do
+            yes | npx wrangler secret delete "$k" || echo "skip $k"
+          done
+          npx wrangler secret list
