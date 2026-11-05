@@ -1,5 +1,15 @@
 # DECISIONS
 
+## 2026-11-01 — 停掉樂透站，封存，網域保留
+
+**決定**：樂透站停止服務。正式站只部署 `server/src/archive.ts`（一頁說明），金流（藍新）、LINE 登入、AI 故事、後台、每日排程全部停用。程式、素材、D1 資料庫都保留，完整版在 tag `final-live`。網域 808888.tw 保留，之後做其他網站。
+
+**為什麼**：RC 判斷電腦算牌沒有意義，樂透每期獨立隨機，統計與 AI 選號不會比亂選更準；娛樂化的故事抓牌試玩後也不夠好玩。網域很吉利又已付費，所以留著。
+
+**部署方式變更**：2026-08-31 那條「`gh workflow run daily-update.yml`」已作廢。現在只有 `gh workflow run archive-deploy.yml`（只部署封存頁並清密鑰）。要復活完整功能時，從 `final-live` 還原 `server/wrangler.toml` 與 `daily-update.yml`，並重新設定藍新與 GH_PAT 密鑰。
+
+**殘餘風險**：D1 裡仍有 LINE 登入會員的資料（LINE user id、暱稱），封存頁有提供來信刪除的管道。如果確定不復活，建議之後把會員資料刪掉。
+
 ## 2026-08-31 — 部署方式：push 後手動觸發 GitHub Actions，不修本機 wrangler 認證
 
 **決定**：這個專案 push 到 `main` 不會自動部署，正式的部署只有兩個管道：
