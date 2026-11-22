@@ -31,7 +31,6 @@ export function LastDrawMatch({ latest }: { latest: Latest }) {
 
   if (!sel || !info) return null;
   const matchedSet = new Set(info.matchedMain);
-  const picked = new Set(sel.picks);
   const hasPicks = sel.picks.length > 0;
   // 大獎才灑彩帶；fireKey 綁命中組合，換一組會重播
   const fireKey = info.big ? info.matchedMain.reduce((a, b) => a + b, info.matchedMain.length * 100) : 0;

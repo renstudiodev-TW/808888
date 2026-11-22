@@ -88,7 +88,7 @@ app.all("*", async (c) => {
   return c.env.ASSETS.fetch(c.req.raw);
 });
 
-export default {
+const workerHandler = {
   fetch: app.fetch,
   // Cloudflare Cron Triggers（可靠，不像 GitHub 排程會飄）：
   //   15:00 UTC (23:00 台灣) → 開獎後觸發 GitHub 重建當日分析資料
@@ -102,6 +102,8 @@ export default {
     }
   },
 };
+
+export default workerHandler;
 
 // Workers 型別（避免額外依賴 @cloudflare/workers-types）
 interface ScheduledEvent { readonly scheduledTime: number; readonly cron: string; }

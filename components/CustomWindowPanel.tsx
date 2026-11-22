@@ -20,23 +20,32 @@ export function CustomWindowPanel({ game }: { game: string }) {
   const [data, setData] = useState<Analysis | null>(null);
   const [busy, setBusy] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reqId = useRef(0); // 過期回應防護：只採用最後一次請求的結果
 
   function load(w: number) {
+    const id = ++reqId.current;
     setBusy(true);
     fetch(`/api/me/analyze?game=${game}&window=${w}`, { credentials: "same-origin" })
       .then(async (r) => {
+        if (id !== reqId.current) return;
         if (r.status === 401 || r.status === 403) return setAccess("locked");
         if (r.ok) {
-          setData(await r.json());
+          const j = await r.json();
+          if (id !== reqId.current) return;
+          setData(j);
           setAccess("ok");
         }
       })
       .catch(() => {})
-      .finally(() => setBusy(false));
+      .finally(() => {
+        if (id === reqId.current) setBusy(false);
+      });
   }
 
   useEffect(() => {
-    load(50);
+    // 延後到下一個 tick 再發請求，避免在 effect 內同步 setState
+    const t = setTimeout(() => load(50), 0);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game]);
 

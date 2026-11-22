@@ -3,7 +3,7 @@
 // 全站共用的「自選號碼」狀態。選號框、黏頂顯示條、各工具的判語與高亮都讀這裡。
 // 設計：tolerant hook（不在 Provider 內回 null），避免任何工具被單獨重用時炸掉。
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 export interface SelectionConfig {
   game: string;
@@ -41,26 +41,36 @@ export function SelectionProvider({
   const [special, setSpecial] = useState<number | null>(null);
 
   // 換彩種時清空，並從 localStorage 還原該彩種上次的牌（在 effect 內做，避免 SSR/hydration 不一致）
+  // 延後到下一個 tick 才 setState（避免在 effect 內同步更新）；還原完成前不寫回，免得把舊資料蓋成空的
+  const restored = useRef(false);
   useEffect(() => {
-    setPicks([]);
-    setSpecial(null);
-    try {
-      const raw = localStorage.getItem(`pick:${game}`);
-      if (raw) {
-        const o = JSON.parse(raw);
-        if (Array.isArray(o.picks)) {
-          setPicks(o.picks.filter((n: number) => Number.isInteger(n) && n >= 1 && n <= pool).slice(0, pick));
+    restored.current = false;
+    const t = setTimeout(() => {
+      let nextPicks: number[] = [];
+      let nextSpecial: number | null = null;
+      try {
+        const raw = localStorage.getItem(`pick:${game}`);
+        if (raw) {
+          const o = JSON.parse(raw);
+          if (Array.isArray(o.picks)) {
+            nextPicks = o.picks.filter((n: number) => Number.isInteger(n) && n >= 1 && n <= pool).slice(0, pick);
+          }
+          if (typeof o.special === "number" && secondPool && o.special >= 1 && o.special <= secondPool) {
+            nextSpecial = o.special;
+          }
         }
-        if (typeof o.special === "number" && secondPool && o.special >= 1 && o.special <= secondPool) {
-          setSpecial(o.special);
-        }
+      } catch {
+        /* localStorage 不可用時忽略 */
       }
-    } catch {
-      /* localStorage 不可用時忽略 */
-    }
+      setPicks(nextPicks);
+      setSpecial(nextSpecial);
+      restored.current = true;
+    }, 0);
+    return () => clearTimeout(t);
   }, [game, pool, pick, secondPool]);
 
   useEffect(() => {
+    if (!restored.current) return;
     try {
       localStorage.setItem(`pick:${game}`, JSON.stringify({ picks, special }));
     } catch {

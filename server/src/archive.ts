@@ -43,7 +43,7 @@ const HTML_HEADERS = {
   "cache-control": "public, max-age=3600",
 };
 
-export default {
+const archiveHandler = {
   async fetch(req: Request): Promise<Response> {
     const { pathname } = new URL(req.url);
     if (pathname === "/robots.txt") {
@@ -53,3 +53,5 @@ export default {
     return new Response(PAGE, { status: pathname === "/" ? 200 : 404, headers: HTML_HEADERS });
   },
 };
+
+export default archiveHandler;

@@ -11,12 +11,14 @@ export function useFreshness(game: string, dataPeriod?: string | null) {
 
   useEffect(() => {
     if (!dataPeriod) {
-      setReady(true);
-      return;
+      const t = setTimeout(() => setReady(true), 0);
+      return () => clearTimeout(t);
     }
+    let alive = true;
     fetch("/api/draws", { credentials: "same-origin" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
+        if (!alive) return;
         const draw = (d?.draws ?? []).find((x: { game: string; period: string }) => x.game === game);
         if (draw?.period) {
           setCurrentPeriod(String(draw.period));
@@ -25,7 +27,12 @@ export function useFreshness(game: string, dataPeriod?: string | null) {
         }
       })
       .catch(() => {})
-      .finally(() => setReady(true));
+      .finally(() => {
+        if (alive) setReady(true);
+      });
+    return () => {
+      alive = false;
+    };
   }, [game, dataPeriod]);
 
   return { stale, currentPeriod, ready };

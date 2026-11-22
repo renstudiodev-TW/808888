@@ -22,23 +22,32 @@ export function CrossSelectPanel({ game }: { game: string }) {
   const [mode, setMode] = useState<"intersect" | "union">("intersect");
   const [busy, setBusy] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reqId = useRef(0); // 過期回應防護：只採用最後一次請求的結果
 
   function load(nv: number) {
+    const id = ++reqId.current;
     setBusy(true);
     fetch(`/api/me/cross?game=${game}&n=${nv}`, { credentials: "same-origin" })
       .then(async (r) => {
+        if (id !== reqId.current) return;
         if (r.status === 401 || r.status === 403) return setAccess("locked");
         if (r.ok) {
-          setMethods((await r.json()).methods);
+          const j = await r.json();
+          if (id !== reqId.current) return;
+          setMethods(j.methods);
           setAccess("ok");
         }
       })
       .catch(() => setAccess("locked"))
-      .finally(() => setBusy(false));
+      .finally(() => {
+        if (id === reqId.current) setBusy(false);
+      });
   }
 
   useEffect(() => {
-    load(8);
+    // 延後到下一個 tick 再發請求，避免在 effect 內同步 setState
+    const t = setTimeout(() => load(8), 0);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game]);
 

@@ -1,7 +1,7 @@
 // 抓牌指標：每個函式皆為純函式，輸入歷史開獎，輸出統計數值。
 // 免責：僅將玩家手算自動化，無法提高中獎率、不保證中獎。
 
-import type { Draw, GameConfig, History } from "./types";
+import type { GameConfig, History } from "./types";
 import {
   acValue, combination, isPrime, maxRun, mean, sum,
   tailOf, zoneOf, zodiacOf,

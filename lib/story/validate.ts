@@ -24,7 +24,6 @@ const BAD_WORDS = [
 
 const URL_PATTERN = /https?:|ftp:|:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|tw|cc|io|co|me|app|xyz|info|top|link)\b/i;
 
-// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/g;
 
 function bad(message: string): ValidateResult {

@@ -117,7 +117,7 @@ function decodeEntities(s: string): string {
 
 // 還原真正文章網址：Bing 用 apiclick.aspx?...&url=<encoded> 包裝轉址，抽出 url 參數即原文。
 function cleanLink(raw: string): string {
-  let link = raw.replace(/&amp;/g, "&").trim();
+  const link = raw.replace(/&amp;/g, "&").trim();
   const m = link.match(/[?&]url=([^&]+)/i);
   if (m) {
     try {

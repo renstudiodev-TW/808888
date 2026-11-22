@@ -29,6 +29,8 @@ export function SubscribeButton({
       body: new URLSearchParams({ tier, cycle }),
     });
     if (r.status === 401) {
+      // 導向 Worker 的 LINE 登入路由，不是 Next.js 頁面
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = "/auth/line/login";
       return;
     }
@@ -59,6 +61,8 @@ export function SubscribeButton({
   async function go() {
     setErr(null);
     if (tier === "free") {
+      // 導向 Worker 的 LINE 登入路由，不是 Next.js 頁面
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = "/auth/line/login";
       return;
     }

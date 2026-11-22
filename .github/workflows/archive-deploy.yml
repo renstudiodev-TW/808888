@@ -17,6 +17,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Lint and type check (frontend)
+        run: |
+          npm ci
+          npx eslint
+          npx tsc --noEmit --incremental false
+
       - name: Install server deps
         working-directory: server
         run: npm ci
