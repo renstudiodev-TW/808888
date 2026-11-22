@@ -10,7 +10,7 @@
     "data": "tsx scripts/build-data.ts daily539 lotto649 superLotto638"
   },
   "dependencies": {
-    "next": "16.2.9",
+    "next": "^16.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.9.0"
@@ -21,7 +21,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "^16.4.6",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5"
