@@ -56,3 +56,5 @@
 - 前端 next 升 16.4.6，npm audit 前端 0 個弱點；後端 audit fix 後剩 1 個中度（@hono/node-server，僅本機開發用，Worker 不載入）。
 - archive-deploy.yml 加 lint 與 tsc 步驟。
 - 已知限制：後端 tsc 有 18 個舊有型別錯誤（member.ts 等已停用的程式，Hono Variables 型別），未處理；未部署。
+
+- 後端 tsc 18 個舊型別錯誤清零：server/src/auth.ts 用 ContextVariableMap 宣告 session 型別。lint、tsc、wrangler dry-run 通過，未部署。

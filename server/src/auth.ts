@@ -74,3 +74,10 @@ export const requireMember: MiddlewareHandler = async (c, next) => {
   await next();
 };
 
+
+// 讓 c.get("session") / c.set("session", ...) 有型別（requireAdmin、requireMember 會寫入）
+declare module "hono" {
+  interface ContextVariableMap {
+    session: Session;
+  }
+}
