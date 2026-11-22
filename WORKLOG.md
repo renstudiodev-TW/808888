@@ -48,3 +48,11 @@
 ### 下一步
 - 若本機 wrangler 部署要能用，先處理 `CLOUDFLARE_API_TOKEN` 失效問題。
 - 平常功能改動走「push → `gh workflow run daily-update.yml`」即可，不用等每日 cron。
+
+## 2026-11-22
+
+### 做了什麼
+- T-374 健檢修補：ESLint 15 錯誤 6 警告清零（兩個分析面板加過期回應防護、4 處 effect 同步 setState 改延後、eslint 設定把 Hono 後端與 Node 腳本分開套規則、後端 const 與具名匯出）。
+- 前端 next 升 16.4.6，npm audit 前端 0 個弱點；後端 audit fix 後剩 1 個中度（@hono/node-server，僅本機開發用，Worker 不載入）。
+- archive-deploy.yml 加 lint 與 tsc 步驟。
+- 已知限制：後端 tsc 有 18 個舊有型別錯誤（member.ts 等已停用的程式，Hono Variables 型別），未處理；未部署。
